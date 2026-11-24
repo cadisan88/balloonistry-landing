@@ -1,0 +1,89 @@
+---
+import type { GetStaticPaths } from 'astro';
+import CategoryChips from '../../components/CategoryChips.astro';
+import ChannelLinks from '../../components/ChannelLinks.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProductsInCategory, getVisibleCategories, type Category } from '../../lib/content';
+import { breadcrumbJsonLd, describe } from '../../lib/seo';
+
+// Hidden categories get no page.
+export const getStaticPaths = (async () => {
+  const categories = await getVisibleCategories();
+  return categories.map((category) => ({
+    params: { category: category.id },
+    props: { category },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const { name, description } = category.data;
+const products = await getProductsInCategory(category.id);
+const metaDescription = describe(
+  description,
+  `${name} from Balloonistry: custom balloon gifts in Kitchener-Waterloo, made to order in your colours.`,
+);
+const jsonLd = [
+  breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Shop', path: '/shop/' },
+    { name, path: `/shop/${category.id}/` },
+  ]),
+];
+---
+
+<BaseLayout title={name} description={metaDescription} pageType="category" jsonLd={jsonLd}>
+  <section class="container shop">
+    <header class="shop__header">
+      <p class="eyebrow">Shop</p>
+      <h1>{name}</h1>
+      {description && <p>{description}</p>}
+    </header>
+    <CategoryChips active={category.id} location="category" />
+    {products.length > 0 ? (
+      <ProductGrid products={products} list="category" heading="h2" />
+    ) : (
+      <div class="shop__empty">
+        <h2>Ask us for a custom design</h2>
+        <p>We do not have designs in this category yet. Tell us your idea and we will make it.</p>
+        <ChannelLinks location="category_empty" formHref="/contact/" />
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .shop {
+    display: grid;
+    /* minmax(0, ...) lets the chip row scroll and not widen the page */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    padding-bottom: var(--section-pad);
+  }
+
+  .shop__header > :last-child {
+    margin-bottom: 0;
+  }
+
+  .shop__empty {
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius);
+    background: var(--color-lavender-soft);
+  }
+
+  .shop__empty h2 {
+    font-size: var(--text-h3);
+  }
+
+  .shop__empty p {
+    margin-bottom: var(--space-5);
+  }
+
+  .shop__empty > :last-child {
+    margin-bottom: 0;
+  }
+</style>

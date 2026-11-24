@@ -1,0 +1,50 @@
+# 301 redirects from the old Wix site (docs/LAUNCH_CHECKLIST.md section 3).
+# Source: https://www.balloonistry.ca/sitemap.xml and its child sitemaps, read on 2026-11-17.
+# The first matching rule wins. The apex to www redirect is a Cloudflare rule, not this file.
+
+# Pages
+/contact-us                  /contact/                         301
+/event-list                  /events/                          301
+/faq                         /faq/                             301
+/about-us                    /about/                           301
+/english-privacy-policy      /policies/privacy/                301
+/english-terms-conditions    /policies/terms/                  301
+/english-shipping-policy     /policies/shipping-pickup/        301
+/english-refund-policy       /policies/refund-cancellation/    301
+/accessibility-statement     /policies/accessibility/          301
+/shop                        /shop/                            301
+
+# Categories
+/category/all-products           /shop/                            301
+/category/hot-air-balloons       /shop/hot-air-balloons/           301
+/category/gift-balloons          /shop/gift-balloons/              301
+/category/artistic-balloons      /shop/artistic-balloons/          301
+/category/balloon-bouquets       /shop/balloon-bouquets/           301
+/category/valentines-collection  /shop/valentines-collection/      301
+/category/encapsulated           /shop/encapsulated/               301
+/category/structures             /shop/structures/                 301
+/category/gender-reveal          /shop/gender-reveal/              301
+/category/baby-welcome           /shop/baby-welcome/               301
+/category/birthday-balloons      /shop/birthday-balloons/          301
+/category/wedding-proposals      /shop/wedding-proposals/          301
+
+# Products with the same name on the new site
+/product-page/plush-balloon-gift    /products/plush-balloon-gift/    301
+/product-page/pop-me-balloon        /products/pop-me-balloon/        301
+/product-page/photo-encapsulated    /products/photo-encapsulated/    301
+/product-page/flower-filled-gift    /products/flower-filled-gift/    301
+/product-page/balloon-column        /products/balloon-column/        301
+/product-page/lollipop-gift         /products/lollipop-gift/         301
+/product-page/plush-stuffed-gift    /products/plush-stuffed-gift/    301
+/product-page/hot-air-balloon       /products/hot-air-balloon/       301
+/product-page/balloon-centerpiece   /products/balloon-centerpiece/   301
+/product-page/flakes-balloon        /products/flakes-balloon/        301
+/product-page/paint-balloon         /products/paint-balloon/         301
+/product-page/cloud-balloon         /products/cloud-balloon/         301
+/product-page/latex-bouquet         /products/latex-bouquet/         301
+/product-page/number-balloon-stand  /products/number-balloon-stand/  301
+
+# TODO: products on the old site that do not match a new product yet (see docs/TODO.md).
+# They go to the shop until the owner confirms where they belong.
+/product-page/prestige-balloon      /shop/                           301
+/product-page/balloon-gift-box      /shop/                           301

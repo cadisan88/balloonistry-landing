@@ -1,0 +1,216 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import ContactForm from '../../components/ContactForm.astro';
+import OrderPanel from '../../components/OrderPanel.astro';
+import ProductGallery from '../../components/ProductGallery.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import ProductTags from '../../components/ProductTags.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  getAvailableProducts,
+  getCategoriesOf,
+  getRelatedProducts,
+  type Product,
+} from '../../lib/content';
+import { buildMessage } from '../../lib/channels';
+import { formatPrice } from '../../lib/price';
+import { absoluteUrl, breadcrumbJsonLd, describe, productJsonLd } from '../../lib/seo';
+
+// Products with `available: false` get no page.
+export const getStaticPaths = (async () => {
+  const products = await getAvailableProducts();
+  return products.map((product) => ({
+    params: { slug: product.id },
+    props: { product },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+const { name, price, tags, images, imageAlt } = product.data;
+const { Content } = await render(product);
+const categories = await getCategoriesOf(product);
+const related = await getRelatedProducts(product);
+const productRef = { id: product.id, name };
+const ORDER_FORM_ID = 'order-form';
+
+// Search and share data. The owner's description is used once it is no longer a TODO.
+const [mainImage] = images;
+const firstParagraph = (product.body ?? '')
+  .trim()
+  .split(/\n\s*\n/)[0]
+  ?.replace(/\s+/g, ' ');
+const description = describe(
+  firstParagraph && firstParagraph.length > 160
+    ? `${firstParagraph.slice(0, 157)}...`
+    : firstParagraph,
+  `${name}, ${formatPrice(price)}. A custom balloon gift from Balloonistry in Kitchener-Waterloo. Order by form, WhatsApp, text or phone.`,
+);
+const shareImage = mainImage
+  ? await getImage({ src: mainImage, width: 1200, height: 1200, format: 'jpg', fit: 'cover' })
+  : undefined;
+const [firstCategory] = categories;
+const jsonLd = [
+  productJsonLd({
+    id: product.id,
+    name,
+    description,
+    imageUrl: shareImage ? absoluteUrl(shareImage.src) : '',
+    price,
+  }),
+  breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Shop', path: '/shop/' },
+    ...(firstCategory
+      ? [{ name: firstCategory.data.name, path: `/shop/${firstCategory.id}/` }]
+      : []),
+    { name, path: `/products/${product.id}/` },
+  ]),
+];
+---
+
+<BaseLayout
+  title={name}
+  description={description}
+  pageType="product"
+  image={mainImage}
+  imageAlt={imageAlt ?? name}
+  ogType="product"
+  jsonLd={jsonLd}
+  product={productRef}
+  formHref={`#${ORDER_FORM_ID}`}
+>
+  <article
+    class="container product"
+    data-product-page
+    data-product={product.id}
+    data-price={price}
+    data-categories={categories.map((category) => category.id).join(',')}
+  >
+    <ProductGallery images={images} alt={imageAlt ?? name} />
+
+    <div class="product__info">
+      <ProductTags tags={tags} />
+      <h1 class="product__name">{name}</h1>
+      <p class="product__price">{formatPrice(price)}</p>
+
+      <div class="product__description">
+        <Content />
+      </div>
+
+      <OrderPanel product={productRef} formId={ORDER_FORM_ID} />
+
+      <p class="product__note">
+        Every design can be customized. Tell us your colours, theme and date.
+      </p>
+
+      {categories.length > 0 && (
+        <div class="product__categories">
+          <h2 class="small">Categories</h2>
+          <ul>
+            {categories.map((category) => (
+              <li>
+                <a class="chip" href={`/shop/${category.id}/`}>
+                  {category.data.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </article>
+
+  <section class="container order-form" id={ORDER_FORM_ID} aria-labelledby="order-form-title">
+    <h2 id="order-form-title">Order with the form</h2>
+    <p>Your message is ready below. Add your date, colours and theme, and we will reply soon.</p>
+    <ContactForm
+      type="order"
+      idPrefix="order"
+      product={productRef}
+      message={buildMessage(productRef)}
+      location="product_panel"
+    />
+  </section>
+
+  {related.length > 0 && (
+    <section class="container section related">
+      <h2>You may also like</h2>
+      <ProductGrid products={related} list="related" />
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .product {
+    display: grid;
+    gap: var(--space-6);
+    padding-bottom: var(--space-7);
+  }
+
+  @media (min-width: 860px) {
+    .product {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-8);
+      align-items: start;
+    }
+  }
+
+  .product__info {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .product__info > :global(*) {
+    margin-block: 0;
+  }
+
+  .product__name {
+    font-size: var(--text-h2);
+  }
+
+  .product__price {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-crimson-deep);
+  }
+
+  .product__description > :global(:last-child) {
+    margin-bottom: 0;
+  }
+
+  .product__note {
+    padding: var(--space-4);
+    border-radius: var(--radius-sm);
+    background: var(--color-lavender-soft);
+  }
+
+  .product__categories h2 {
+    margin-bottom: var(--space-2);
+    font-family: var(--font-body);
+  }
+
+  .product__categories ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .order-form {
+    max-width: 52rem;
+    padding-bottom: var(--space-7);
+  }
+
+  .related {
+    padding-top: var(--space-7);
+  }
+</style>

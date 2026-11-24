@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "balloonistry",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-11-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    // Serve the prerendered 404 page for unknown URLs.
+    "not_found_handling": "404-page",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  // Contact form email. The destination must be a verified Email Routing address.
+  // For a real test send from local dev, add "remote": true here. Do not commit it.
+  "send_email": [
+    {
+      "name": "CONTACT_EMAIL",
+      "destination_address": "balloonistry@outlook.com",
+    },
+  ],
+  "vars": {
+    "MAIL_FROM": "website@balloonistry.ca",
+    // Origins allowed to POST to /api/contact (comma separated).
+    // Add the *.workers.dev preview host here once the Worker exists.
+    "ALLOWED_ORIGINS": "https://www.balloonistry.ca,https://balloonistry.ca",
+  },
+  // Secrets (never in this file): TURNSTILE_SECRET_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.
+  // Local: .dev.vars. Production: wrangler secret put <NAME>.
+}

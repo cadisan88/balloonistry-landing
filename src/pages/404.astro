@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" pageType="not_found" index={false}>
+  <section class="container section not-found">
+    <p class="eyebrow">Error 404</p>
+    <h1>This page floated away</h1>
+    <p>We could not find the page you were looking for. It may have moved, or the link is old.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary" href="/shop/">
+        Shop balloons
+      </a>
+      <a class="btn btn-ghost" href="/">
+        Go to the home page
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    padding-top: var(--space-6);
+  }
+
+  .not-found .btn-row {
+    margin-top: var(--space-5);
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import ConnectSection from '../components/ConnectSection.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../config/site';
+---
+
+<BaseLayout
+  title="Contact Us"
+  description={`Contact ${site.name} in Kitchener-Waterloo to order balloon gifts or plan event decor.`}
+  pageType="contact"
+  business
+  formHref="#contact-form"
+>
+  <section class="container contact-page" id="contact-form" aria-labelledby="contact-title">
+    <header class="contact-page__header">
+      <p class="eyebrow">Contact Us</p>
+      <h1 id="contact-title">Let's talk balloons</h1>
+      <p>Send us a message with the form, or reach us on the channel you like best.</p>
+    </header>
+    <ConnectSection idPrefix="contact" details headingLevel="h2" />
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-page {
+    padding-bottom: var(--section-pad);
+  }
+
+  .contact-page__header {
+    margin-bottom: var(--space-7);
+  }
+
+  .contact-page__header > :last-child {
+    margin-bottom: 0;
+  }
+</style>

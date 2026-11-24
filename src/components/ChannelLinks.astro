@@ -1,0 +1,140 @@
+---
+/**
+ * The ordering channels in the order of docs/SPEC.md R7:
+ * 1. the form (primary), 2. WhatsApp (secondary), 3. a small row: SMS, call, Instagram, Messenger.
+ * Instagram and Messenger cannot be pre-filled: a click copies the message (src/scripts/channels.ts).
+ */
+import Icon from './Icon.astro';
+import { buildMessage, channelLinks, type ChannelLocation, type ProductRef } from '../lib/channels';
+
+interface Props {
+  location: ChannelLocation;
+  product?: ProductRef;
+  /** Where "Order with the form" goes: an anchor on this page, or /contact/. Omit to hide it. */
+  formHref?: string;
+  /** "order" for product and shop contexts, "contact" for general contact. */
+  intent?: 'order' | 'contact';
+}
+
+const { location, product, formHref, intent = 'order' } = Astro.props;
+const message = buildMessage(product);
+const links = channelLinks(message);
+const isOrder = intent === 'order';
+---
+
+<div class="channels" data-channels>
+  <div class="channels__main">
+    {formHref && (
+      <a
+        class="btn btn-primary"
+        href={formHref}
+        data-channel="form"
+        data-channel-location={location}
+        data-product={product?.id}
+        data-form-link
+      >
+        <Icon name="mail" />
+        {isOrder ? 'Order with the form' : 'Send us a message'}
+      </a>
+    )}
+    <a
+      class="btn btn-secondary"
+      href={links.whatsapp}
+      target="_blank"
+      rel="noopener"
+      data-channel="whatsapp"
+      data-channel-location={location}
+      data-product={product?.id}
+    >
+      <Icon name="whatsapp" />
+      {isOrder ? 'Order on WhatsApp' : 'Message us on WhatsApp'}
+      <span class="visually-hidden">(opens WhatsApp)</span>
+    </a>
+  </div>
+
+  <ul class="channels__row">
+    <li>
+      <a
+        class="chip"
+        href={links.sms}
+        data-channel="sms"
+        data-channel-location={location}
+        data-product={product?.id}
+      >
+        <Icon name="message-square-text" size={18} />
+        Text us
+      </a>
+    </li>
+    <li>
+      <a
+        class="chip"
+        href={links.phone}
+        data-channel="phone"
+        data-channel-location={location}
+        data-product={product?.id}
+      >
+        <Icon name="phone" size={18} />
+        Call
+      </a>
+    </li>
+    <li>
+      <a
+        class="chip"
+        href={links.instagram}
+        target="_blank"
+        rel="noopener"
+        data-channel="instagram"
+        data-channel-location={location}
+        data-product={product?.id}
+        data-copy-message={message}
+      >
+        <Icon name="instagram" size={18} />
+        Instagram
+        <span class="visually-hidden">(opens in a new tab)</span>
+      </a>
+    </li>
+    <li>
+      <a
+        class="chip"
+        href={links.messenger}
+        target="_blank"
+        rel="noopener"
+        data-channel="messenger"
+        data-channel-location={location}
+        data-product={product?.id}
+        data-copy-message={message}
+      >
+        <Icon name="messenger" size={18} />
+        Messenger
+        <span class="visually-hidden">(opens in a new tab)</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+<style>
+  .channels {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .channels__main {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 600px) {
+    .channels__main {
+      grid-template-columns: repeat(auto-fit, minmax(14rem, max-content));
+    }
+  }
+
+  .channels__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

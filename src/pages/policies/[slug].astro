@@ -1,0 +1,48 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site } from '../../config/site';
+
+export const getStaticPaths = (async () => {
+  const policies = await getCollection('policies');
+  return policies.map((policy) => ({ params: { slug: policy.id }, props: { policy } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  policy: CollectionEntry<'policies'>;
+}
+
+const { policy } = Astro.props;
+const { title, updated } = policy.data;
+const { Content } = await render(policy);
+const updatedText = new Intl.DateTimeFormat(site.locale, {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+}).format(updated);
+---
+
+<BaseLayout title={title} description={`${title} for ${site.name}.`} pageType="policy">
+  <article class="container text-page">
+    <header class="text-page__header">
+      <p class="eyebrow">Policies</p>
+      <h1>{title}</h1>
+      <p class="small">
+        Last updated: <time datetime={updated.toISOString().slice(0, 10)}>{updatedText}</time>
+      </p>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .text-page {
+    padding-bottom: var(--section-pad);
+  }
+
+  .text-page__header {
+    margin-bottom: var(--space-6);
+  }
+</style>

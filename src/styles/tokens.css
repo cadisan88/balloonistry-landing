@@ -1,0 +1,108 @@
+/*
+ * Design tokens. See docs/STYLE_GUIDE.md.
+ * This is the only file where raw colour values are allowed.
+ */
+:root {
+  /* Brand colours (approved). None of them is dark enough for text on white:
+     text on them is always ink, and they are never used for text themselves. */
+  --color-turquoise: #72c0a6; /* secondary buttons, the "New" tag, accents */
+  --color-lavender: #b397c7; /* gray lavender: chips, soft backgrounds, decorative shapes */
+  --color-crimson: #e55584; /* logo balloon, icons, decorative shapes (3:1 graphics only) */
+  --color-orange: #f3b243; /* primary buttons, the floating Order button */
+  --color-white: #ffffff; /* page background, cards, form fields */
+
+  /* Support colours (for readable text, not brand accents) */
+  --color-ink: #2b2540; /* text, the footer, focus rings */
+  --color-crimson-deep: #9b4269; /* crimson darkened with ink: links, prices, small labels */
+  --color-error: #b3261e;
+  --color-success: #1e7a4c;
+
+  /* Derived colours */
+  --color-orange-hover: color-mix(in srgb, var(--color-orange) 88%, var(--color-ink));
+  --color-turquoise-hover: color-mix(in srgb, var(--color-turquoise) 85%, var(--color-ink));
+  --color-lavender-soft: color-mix(in srgb, var(--color-lavender) 25%, var(--color-white));
+  --color-turquoise-soft: color-mix(in srgb, var(--color-turquoise) 25%, var(--color-white));
+  /* Warm cream page background (home page), mixed from the brand orange */
+  --color-cream: color-mix(in srgb, var(--color-orange) 9%, var(--color-white));
+  --color-border: color-mix(in srgb, var(--color-ink) 18%, var(--color-white));
+  --color-border-strong: color-mix(in srgb, var(--color-ink) 55%, var(--color-white));
+  --color-on-dark-muted: color-mix(in srgb, var(--color-white) 78%, var(--color-ink));
+  --color-header-solid: color-mix(in srgb, var(--color-white) 94%, transparent);
+
+  /* Typography */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+  --text-h1: clamp(2.25rem, 5vw, 4rem);
+  /* Home page display sizes: big, tight, italic Fraunces */
+  --text-display-1: clamp(3rem, 8vw, 6rem);
+  --text-display-2: clamp(2.25rem, 5vw, 3.75rem);
+  --text-h2: clamp(1.75rem, 3.5vw, 2.75rem);
+  --text-h3: 1.25rem;
+  --text-body: 1.0625rem;
+  --text-small: 0.875rem;
+  --text-eyebrow: 0.8rem;
+  --leading-body: 1.65;
+  --leading-heading: 1.15;
+  --measure: 65ch;
+
+  /* Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64, 96 px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  /* Layout. Breakpoints (CSS cannot use variables in media queries): 600px, 860px, 1180px */
+  --content-max: 1180px;
+  --gutter: var(--space-4);
+  --section-pad: var(--space-8);
+  --header-height: 4rem;
+
+  /* Shape */
+  --radius-sm: 12px;
+  --radius: 20px;
+  --radius-pill: 999px;
+  --radius-lg: 32px;
+  --radius-xl: 48px;
+  --radius-arch: 999px 999px var(--radius) var(--radius);
+  /* Scalloped band edges (see .scallop-* in global.css) */
+  --scallop-width: 56px;
+  --scallop-height: 18px;
+
+  /* Shadows: soft and purple-tinted */
+  --shadow-sm: 0 4px 14px rgb(43 37 64 / 0.08);
+  --shadow: 0 10px 30px rgb(43 37 64 / 0.1);
+  --shadow-lg: 0 18px 44px rgb(43 37 64 / 0.16);
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-hover: 0.25s;
+  --duration-reveal: 0.8s;
+  --duration-zoom: 1.4s;
+  /* Springy overshoot for hover "inflate" effects */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-spring: 0.45s;
+
+  /* Layers */
+  --z-header: 100;
+  --z-floating: 200;
+  --z-sheet: 300;
+  --z-toast: 400;
+}
+
+@media (min-width: 600px) {
+  :root {
+    --gutter: var(--space-5);
+  }
+}
+
+@media (min-width: 860px) {
+  :root {
+    --section-pad: var(--space-9);
+    --header-height: 4.5rem;
+  }
+}

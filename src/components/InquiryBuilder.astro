@@ -1,0 +1,176 @@
+---
+/**
+ * Inquiry builder: the visitor picks an occasion, what they would like and a date,
+ * and the picks are written into the contact form's message box (src/scripts/inquiry-builder.ts).
+ * It sits outside the <form>, so it sends nothing itself. Hidden without JavaScript.
+ */
+interface Props {
+  /** id of the message <textarea> to fill. */
+  target: string;
+  occasions: string[];
+  items: string[];
+}
+
+const { target, occasions, items } = Astro.props;
+const id = `${target}-inquiry`;
+---
+
+<div class="inquiry" data-inquiry data-target={target} hidden>
+  <h3 class="inquiry__title" id={`${id}-title`}>
+    Build your message
+  </h3>
+  <p class="inquiry__intro">
+    Tap what fits and we write it into your message. You can change the text before you send it.
+  </p>
+
+  <fieldset class="inquiry__group">
+    <legend class="inquiry__legend">What are you celebrating?</legend>
+    <div class="inquiry__chips">
+      {occasions.map((occasion) => (
+        <label class="inquiry__chip">
+          <input
+            class="visually-hidden"
+            type="radio"
+            name={`${id}-occasion`}
+            value={occasion}
+            autocomplete="off"
+            data-inquiry-occasion
+          />
+          {occasion}
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <fieldset class="inquiry__group">
+    <legend class="inquiry__legend">What would you like?</legend>
+    <div class="inquiry__chips">
+      {items.map((item) => (
+        <label class="inquiry__chip">
+          <input
+            class="visually-hidden"
+            type="checkbox"
+            value={item}
+            autocomplete="off"
+            data-inquiry-item
+          />
+          {item}
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <div class="inquiry__group">
+    <label class="inquiry__legend" for={`${id}-date`}>
+      When do you need it?
+    </label>
+    <input
+      class="inquiry__date"
+      id={`${id}-date`}
+      type="date"
+      autocomplete="off"
+      data-inquiry-date
+    />
+  </div>
+
+  <p class="inquiry__status small" aria-live="polite" data-inquiry-status></p>
+</div>
+
+<script>
+  import { initInquiryBuilders } from '../scripts/inquiry-builder';
+
+  initInquiryBuilders();
+</script>
+
+<style>
+  .inquiry {
+    margin-bottom: var(--space-7);
+  }
+
+  .inquiry[hidden] {
+    display: none;
+  }
+
+  .inquiry__title {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-h3);
+  }
+
+  .inquiry__intro {
+    margin-bottom: var(--space-5);
+  }
+
+  .inquiry__group {
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    border: 0;
+  }
+
+  .inquiry__legend {
+    display: block;
+    margin-bottom: var(--space-3);
+    padding: 0;
+    font-weight: 800;
+  }
+
+  .inquiry__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .inquiry__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    border: 2px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    font-size: var(--text-small);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-hover) var(--ease),
+      border-color var(--duration-hover) var(--ease),
+      color var(--duration-hover) var(--ease),
+      transform var(--duration-spring) var(--ease-spring);
+  }
+
+  .inquiry__chip:hover {
+    border-color: var(--color-ink);
+  }
+
+  /* Picked: ink chip, with a little spring "pop" */
+  .inquiry__chip:has(input:checked) {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-white);
+    transform: scale(1.05);
+  }
+
+  .inquiry__chip:has(input:focus-visible) {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  .inquiry__date {
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    border: 2px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+  }
+
+  .inquiry__status {
+    min-height: 1.5em;
+    margin: 0;
+    color: var(--color-crimson-deep);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .inquiry__chip:has(input:checked) {
+      transform: none;
+    }
+  }
+</style>

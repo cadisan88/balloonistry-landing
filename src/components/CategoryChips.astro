@@ -1,0 +1,62 @@
+---
+import { getVisibleCategories } from '../lib/content';
+
+interface Props {
+  /** The id of the active category. Leave empty on the shop page ("All" is active). */
+  active?: string;
+  /** Sent with the `category_clicked` event. */
+  location: 'shop' | 'category';
+}
+
+const { active, location } = Astro.props;
+const categories = await getVisibleCategories();
+---
+
+<nav class="category-chips" aria-label="Product categories">
+  <ul>
+    <li>
+      <a class="chip" href="/shop/" aria-current={active ? undefined : 'page'}>
+        All
+      </a>
+    </li>
+    {categories.map((category) => (
+      <li>
+        <a
+          class="chip"
+          href={`/shop/${category.id}/`}
+          aria-current={category.id === active ? 'page' : undefined}
+          data-category-link
+          data-category={category.id}
+          data-location={location}
+        >
+          {category.data.name}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .category-chips ul {
+    display: flex;
+    gap: var(--space-2);
+    margin: 0;
+    /* Room for the focus ring inside the scroll area */
+    padding: var(--space-2) var(--gutter);
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  /* On phones the chips scroll sideways, edge to edge */
+  .category-chips {
+    margin-inline: calc(-1 * var(--gutter));
+  }
+
+  @media (min-width: 860px) {
+    .category-chips ul {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+  }
+</style>

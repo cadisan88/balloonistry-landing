@@ -1,0 +1,37 @@
+---
+/** Status messages, for example "Message copied". Filled by src/scripts/toast.ts. */
+---
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+
+<style>
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-5);
+    z-index: var(--z-toast);
+    max-width: calc(100% - 2 * var(--gutter));
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: var(--color-white);
+    font-weight: 700;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transform: translate(-50%, 1rem);
+    pointer-events: none;
+    transition:
+      opacity var(--duration-hover) var(--ease),
+      transform var(--duration-hover) var(--ease);
+  }
+
+  .toast:empty {
+    padding: 0;
+  }
+
+  .toast:global(.is-visible) {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+</style>

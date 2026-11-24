@@ -1,0 +1,191 @@
+---
+import { Picture } from 'astro:assets';
+import ChannelLinks from '../components/ChannelLinks.astro';
+import ContactForm from '../components/ContactForm.astro';
+import EventGallery from '../components/EventGallery.astro';
+import EventServices from '../components/EventServices.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { eventGallery } from '../config/events';
+import { site } from '../config/site';
+
+const QUOTE_ID = 'quote';
+const heroPhoto = eventGallery[0];
+const steps = [
+  'Tell us about your event.',
+  'We send a design and quote.',
+  'We deliver and install.',
+];
+---
+
+<BaseLayout
+  title="Event Decor"
+  description={`Event balloon design and installation by ${site.name}: arches, garlands, columns and outdoor decor in Kitchener-Waterloo.`}
+  pageType="events"
+  formHref={`#${QUOTE_ID}`}
+>
+  <section class="container events-hero" aria-labelledby="events-title">
+    <div class="events-hero__text">
+      <p class="eyebrow">Event decor</p>
+      <h1 id="events-title">Event balloon design and installation</h1>
+      <p>
+        We design balloon decor for your celebration and install it at your venue. Tell us your
+        date, colours and theme, and we will send you a design and a quote.
+      </p>
+      <a
+        class="btn btn-primary"
+        href={`#${QUOTE_ID}`}
+        data-form-link
+        data-quote-cta
+        data-location="events"
+      >
+        Request a quote
+      </a>
+    </div>
+    {heroPhoto && (
+      <div class="events-hero__media zoom-out">
+        <Picture
+          src={heroPhoto.image}
+          alt={heroPhoto.alt}
+          formats={['avif', 'webp']}
+          widths={[480, 800, 1200]}
+          sizes="(min-width: 1180px) 560px, (min-width: 860px) 48vw, 92vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    )}
+  </section>
+
+  <section class="section events-services" aria-labelledby="services-title">
+    <div class="container">
+      <SectionHeader
+        eyebrow="Services"
+        title="Balloon decor for every celebration"
+        id="services-title"
+      />
+      <EventServices />
+      <EventGallery />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="steps-title">
+    <div class="container">
+      <SectionHeader eyebrow="How it works" title="Three simple steps" id="steps-title" />
+      <ol class="steps reveal">
+        {steps.map((step, index) => (
+          <li>
+            <span class="steps__number" aria-hidden="true">
+              {index + 1}
+            </span>
+            {step}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section events-quote" id={QUOTE_ID} aria-labelledby="quote-title">
+    <div class="container events-quote__inner">
+      <SectionHeader eyebrow="Get a quote" title="Request a quote" id="quote-title">
+        <p>
+          Tell us about your event. The date, type and city help us plan, but they are optional.
+        </p>
+      </SectionHeader>
+      <ContactForm type="event_quote" idPrefix="quote" location="events" />
+
+      <div class="events-quote__channels">
+        <h3>Prefer to chat?</h3>
+        <ChannelLinks location="events" intent="contact" />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .events-hero {
+    display: grid;
+    gap: var(--space-7);
+    align-items: center;
+    padding-bottom: var(--section-pad);
+  }
+
+  @media (min-width: 860px) {
+    .events-hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--space-8);
+    }
+  }
+
+  .events-hero__text p:last-of-type {
+    margin-bottom: var(--space-6);
+  }
+
+  .events-hero__media {
+    aspect-ratio: 3 / 2;
+    border-radius: var(--radius);
+    background: var(--color-lavender-soft);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .events-hero__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .events-services {
+    background: var(--color-turquoise-soft);
+  }
+
+  .steps {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: none;
+  }
+
+  @media (min-width: 860px) {
+    .steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+  }
+
+  .steps li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    font-weight: 700;
+  }
+
+  .steps__number {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-orange);
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+  }
+
+  .events-quote {
+    background: var(--color-turquoise-soft);
+  }
+
+  .events-quote__inner {
+    max-width: 52rem;
+  }
+
+  .events-quote__channels {
+    margin-top: var(--space-7);
+  }
+</style>

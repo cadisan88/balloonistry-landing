@@ -1,0 +1,154 @@
+---
+/**
+ * Mobile only: the floating "Order" button and the sheet with all channels.
+ * The button hides while a contact form is on screen.
+ */
+import ChannelLinks from './ChannelLinks.astro';
+import Icon from './Icon.astro';
+import type { ProductRef } from '../lib/channels';
+
+interface Props {
+  product?: ProductRef;
+  /** Where "Order with the form" goes on this page. */
+  formHref: string;
+}
+
+const { product, formHref } = Astro.props;
+---
+
+<button
+  class="floating-order"
+  type="button"
+  aria-haspopup="dialog"
+  aria-controls="channel-sheet"
+  data-floating-order
+>
+  <Icon name="message-circle" size={22} />
+  Order
+</button>
+
+<dialog id="channel-sheet" class="sheet" aria-labelledby="channel-sheet-title" data-channel-sheet>
+  <div class="sheet__header">
+    <h2 id="channel-sheet-title">How would you like to order?</h2>
+    <button class="sheet__close" type="button" data-sheet-close>
+      <Icon name="x" size={24} />
+      <span class="visually-hidden">Close</span>
+    </button>
+  </div>
+  <ChannelLinks location="channel_sheet" product={product} formHref={formHref} />
+</dialog>
+
+<script>
+  import { initChannelSheet } from '../scripts/channel-sheet';
+
+  initChannelSheet();
+</script>
+
+<style>
+  .floating-order {
+    position: fixed;
+    right: var(--gutter);
+    bottom: var(--space-5);
+    z-index: var(--z-floating);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 52px;
+    padding: var(--space-3) var(--space-5);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-orange);
+    color: var(--color-ink);
+    font-weight: 800;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    transition:
+      opacity var(--duration-hover) var(--ease),
+      transform var(--duration-hover) var(--ease);
+  }
+
+  .floating-order:global(.is-hidden) {
+    opacity: 0;
+    transform: translateY(1rem);
+    pointer-events: none;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-hover) var(--ease),
+      transform var(--duration-hover) var(--ease),
+      visibility 0s var(--duration-hover);
+  }
+
+  /* Mobile only, and only with JavaScript (the sheet needs it) */
+  :global(.no-js) .floating-order {
+    display: none;
+  }
+
+  @media (min-width: 860px) {
+    .floating-order {
+      display: none;
+    }
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 32rem;
+    max-height: calc(100dvh - var(--space-6));
+    margin: auto auto 0;
+    padding: var(--space-5) var(--gutter) var(--space-6);
+    border: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--color-white);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+  }
+
+  .sheet::backdrop {
+    background: rgb(43 37 64 / 0.55);
+  }
+
+  .sheet__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .sheet__header h2 {
+    margin: 0;
+    font-size: 1.375rem;
+  }
+
+  .sheet__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-2)) 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+
+  .sheet__close:hover {
+    background: var(--color-lavender-soft);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet[open] {
+      animation: sheet-up 0.3s var(--ease);
+    }
+
+    @keyframes sheet-up {
+      from {
+        transform: translateY(100%);
+      }
+    }
+  }
+</style>

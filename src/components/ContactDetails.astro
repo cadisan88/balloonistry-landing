@@ -1,0 +1,64 @@
+---
+/** Address with a map link, phone and email. All values come from src/config/site.ts. */
+import Icon from './Icon.astro';
+import { site } from '../config/site';
+
+const { address } = site;
+---
+
+<ul class="contact-details">
+  <li>
+    <Icon name="map-pin" />
+    <div>
+      <address>
+        {address.street}
+        <br />
+        {address.city}, {address.region}
+      </address>
+      <a href={site.mapUrl} target="_blank" rel="noopener">
+        Open in Google Maps<span class="visually-hidden"> (opens in a new tab)</span>
+      </a>
+    </div>
+  </li>
+  <li>
+    <Icon name="phone" />
+    <a href={site.channels.phone} data-channel="phone" data-channel-location="contact_section">
+      {site.phone.display}
+    </a>
+  </li>
+  <li>
+    <Icon name="mail" />
+    <a href={`mailto:${site.email}`}>{site.email}</a>
+  </li>
+  {site.hours && (
+    <li>
+      <Icon name="calendar-heart" />
+      <span>{site.hours}</span>
+    </li>
+  )}
+</ul>
+
+<style>
+  .contact-details {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contact-details li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .contact-details :global(.icon) {
+    margin-top: 0.2em;
+    color: var(--color-crimson-deep);
+  }
+
+  .contact-details address {
+    font-style: normal;
+  }
+</style>

@@ -1,0 +1,28 @@
+node_modules/
+dist/
+.astro/
+.claude
+.wrangler/
+worker-configuration.d.ts
+
+# secrets and local env
+.dev.vars
+.env
+.env.*
+!.env.example
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Test fixture copied in by tests/build/broken-content.test.ts
+src/content/products/__test-fixture__.md
+/tmp/
+
+# Planning, spec and design documents (kept locally, not versioned)
+docs/
+PROMPT.md
+CLAUDE.md
+DESIGN.md

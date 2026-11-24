@@ -1,0 +1,38 @@
+---
+import CategoryChips from '../../components/CategoryChips.astro';
+import ProductGrid from '../../components/ProductGrid.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getListedProducts } from '../../lib/content';
+
+const products = await getListedProducts();
+---
+
+<BaseLayout
+  title="Shop"
+  description="Shop custom balloon gifts from Balloonistry in Kitchener-Waterloo: hot air balloons, gift balloons, bouquets, encapsulated balloons and more."
+  pageType="shop"
+>
+  <section class="container shop">
+    <header class="shop__header">
+      <p class="eyebrow">Shop</p>
+      <h1>Our balloons</h1>
+      <p>Browse our balloon gifts. Every design can be customized.</p>
+    </header>
+    <CategoryChips location="shop" />
+    <ProductGrid products={products} list="shop" heading="h2" />
+  </section>
+</BaseLayout>
+
+<style>
+  .shop {
+    display: grid;
+    /* minmax(0, ...) lets the chip row scroll and not widen the page */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    padding-bottom: var(--section-pad);
+  }
+
+  .shop__header > :last-child {
+    margin-bottom: 0;
+  }
+</style>

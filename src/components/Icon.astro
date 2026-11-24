@@ -1,0 +1,64 @@
+---
+/**
+ * Inline SVG icon. Line icons come from Lucide, brand logos from Simple Icons.
+ * Icons are decorative: the visible label or an aria-label on the parent names the control.
+ */
+import ArrowRight from '../assets/icons/arrow-right.svg';
+import CalendarHeart from '../assets/icons/calendar-heart.svg';
+import Check from '../assets/icons/check.svg';
+import ChevronDown from '../assets/icons/chevron-down.svg';
+import Facebook from '../assets/icons/facebook.svg';
+import HeartHandshake from '../assets/icons/heart-handshake.svg';
+import Instagram from '../assets/icons/instagram.svg';
+import Mail from '../assets/icons/mail.svg';
+import MapPin from '../assets/icons/map-pin.svg';
+import Menu from '../assets/icons/menu.svg';
+import MessageCircle from '../assets/icons/message-circle.svg';
+import MessageSquareText from '../assets/icons/message-square-text.svg';
+import Messenger from '../assets/icons/messenger.svg';
+import Palette from '../assets/icons/palette.svg';
+import Phone from '../assets/icons/phone.svg';
+import Truck from '../assets/icons/truck.svg';
+import Whatsapp from '../assets/icons/whatsapp.svg';
+import X from '../assets/icons/x.svg';
+
+const icons = {
+  'arrow-right': ArrowRight,
+  'calendar-heart': CalendarHeart,
+  check: Check,
+  'chevron-down': ChevronDown,
+  facebook: Facebook,
+  'heart-handshake': HeartHandshake,
+  instagram: Instagram,
+  mail: Mail,
+  'map-pin': MapPin,
+  menu: Menu,
+  'message-circle': MessageCircle,
+  'message-square-text': MessageSquareText,
+  messenger: Messenger,
+  palette: Palette,
+  phone: Phone,
+  truck: Truck,
+  whatsapp: Whatsapp,
+  x: X,
+};
+
+export type IconName = keyof typeof icons;
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { name, size = 20, class: className } = Astro.props;
+const Svg = icons[name];
+---
+
+<Svg width={size} height={size} class:list={['icon', className]} aria-hidden="true" />
+
+<style is:global>
+  .icon {
+    flex-shrink: 0;
+  }
+</style>

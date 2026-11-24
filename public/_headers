@@ -1,0 +1,9 @@
+# Security headers for every static response.
+# The Content-Security-Policy with script and style hashes is a <meta> tag (astro.config.mjs).
+# frame-ancestors only works as a header, so it is here.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY

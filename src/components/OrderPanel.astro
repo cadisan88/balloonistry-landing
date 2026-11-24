@@ -1,0 +1,34 @@
+---
+/** The order panel on a product page (docs/SPEC.md section 7). */
+import ChannelLinks from './ChannelLinks.astro';
+import type { ProductRef } from '../lib/channels';
+
+interface Props {
+  product: ProductRef;
+  /** The id of the order form section on the page. */
+  formId: string;
+}
+
+const { product, formId } = Astro.props;
+---
+
+<section class="order-panel" aria-labelledby="order-panel-title">
+  <h2 id="order-panel-title" class="order-panel__title">
+    Order this design
+  </h2>
+  <ChannelLinks location="product_panel" product={product} formHref={`#${formId}`} />
+</section>
+
+<style>
+  .order-panel {
+    padding: var(--space-5);
+    border-radius: var(--radius);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .order-panel__title {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-h3);
+  }
+</style>

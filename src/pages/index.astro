@@ -1,0 +1,149 @@
+---
+import { getCollection } from 'astro:content';
+import CategoryTiles from '../components/CategoryTiles.astro';
+import ConnectSection from '../components/ConnectSection.astro';
+import EventGallery from '../components/EventGallery.astro';
+import EventServices from '../components/EventServices.astro';
+import HomeHero from '../components/HomeHero.astro';
+import InquiryBuilder from '../components/InquiryBuilder.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import Testimonial from '../components/Testimonial.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getFeaturedProducts, getVisibleCategories } from '../lib/content';
+import { EVENT_TYPE_LABELS } from '../lib/contact/rules';
+
+const [featured, categories, testimonials] = await Promise.all([
+  getFeaturedProducts(),
+  getVisibleCategories(),
+  getCollection('testimonials'),
+]);
+const testimonial = testimonials.find((entry) => entry.data.featured);
+
+// Inquiry builder choices: the event types the quote form knows, and the shop categories
+const occasions = Object.values(EVENT_TYPE_LABELS);
+const inquiryItems = [...categories.map((category) => category.data.name), 'Event decor'];
+---
+
+<BaseLayout
+  pageType="home"
+  business
+  hero
+  formHref="#contact"
+  description="Custom balloon gifts, helium bouquets and event decor in Kitchener-Waterloo. Personalized balloons for birthdays, weddings, baby showers and more."
+>
+  <HomeHero />
+
+  <section class="section band band--cream home-events" aria-labelledby="events-title">
+    <div class="container">
+      <SectionHeader title="Event balloon design and installation" id="events-title" display>
+        <p>
+          We design balloon decor for your celebration and install it at your venue. Tell us your
+          date, colours and theme, and we will send you a design and a quote.
+        </p>
+      </SectionHeader>
+      <EventGallery limit={3} />
+      <div class="home-events__details">
+        <EventServices />
+        <a class="btn btn-primary" href="/events/#quote" data-quote-cta data-location="home">
+          Request a quote
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band band--cream" aria-labelledby="products-title">
+    <div class="container">
+      <div class="home-products__head">
+        <SectionHeader title="Our products" id="products-title" display />
+        <a class="btn btn-ghost" href="/shop/">
+          See all products
+        </a>
+      </div>
+      <ProductGrid products={featured} list="home_featured" />
+
+      <h3 class="home-categories__title reveal">Shop by category</h3>
+      <CategoryTiles categories={categories} location="home" />
+    </div>
+  </section>
+
+  {testimonial && (
+    <section
+      class="section band band--lavender-soft scallop-top scallop-bottom home-love"
+      aria-labelledby="love-title"
+    >
+      <div class="container">
+        <h2 class="home-love__title" id="love-title">
+          Client love
+        </h2>
+        <Testimonial testimonial={testimonial} />
+      </div>
+    </section>
+  )}
+
+  <section class="section band band--cream" id="contact" aria-labelledby="contact-title">
+    <div class="container">
+      <SectionHeader title="Connect with us" id="contact-title" display />
+      <InquiryBuilder target="home-message" occasions={occasions} items={inquiryItems} />
+      <ConnectSection idPrefix="home" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ----- Installations ----- */
+
+  .home-events__details {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+  }
+
+  .home-events__details :global(.event-services) {
+    margin-bottom: 0;
+  }
+
+  .home-events__details .btn {
+    justify-self: start;
+  }
+
+  /* ----- Products: heading on the left, "See all" on the right ----- */
+
+  .home-products__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-7);
+  }
+
+  .home-products__head :global(.section-header) {
+    margin-bottom: 0;
+  }
+
+  .home-categories__title {
+    margin: var(--space-8) 0 var(--space-5);
+    font-size: var(--text-h3);
+  }
+
+  /* ----- Client love ----- */
+
+  .home-love {
+    margin-block: var(--scallop-height);
+  }
+
+  /* Lines up with the quote text below it */
+  .home-love__title {
+    max-width: 48rem;
+    margin: 0 auto var(--space-5);
+    font-size: var(--text-h3);
+    color: var(--color-crimson-deep);
+  }
+
+  /* ----- Connect: keep the builder at a readable width ----- */
+
+  #contact :global(.inquiry) {
+    max-width: 48rem;
+  }
+</style>

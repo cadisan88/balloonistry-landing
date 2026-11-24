@@ -1,0 +1,315 @@
+---
+import { Picture } from 'astro:assets';
+import Icon from './Icon.astro';
+import { isNavGroup, site } from '../config/site';
+import logo from '../assets/brand/logo-header.png';
+
+/** "/shop" and "/shop/" are the same page. */
+const normalize = (path: string) => (path.endsWith('/') ? path : `${path}/`);
+const current = normalize(Astro.url.pathname);
+const isCurrent = (href: string) => normalize(href) === current;
+---
+
+<header class="site-header" data-site-header>
+  <div class="container site-header__bar">
+    <a class="site-header__brand" href="/" aria-label={`${site.name} home`}>
+      <!-- The link has the accessible name, so the image itself is decorative here -->
+      <Picture
+        src={logo}
+        alt=""
+        class="site-header__logo"
+        height={60}
+        densities={[1, 2, 3]}
+        formats={['avif', 'webp']}
+        loading="eager"
+      />
+    </a>
+
+    <button
+      class="site-header__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      data-nav-toggle
+    >
+      <span class="visually-hidden">Menu</span>
+      <Icon name="menu" size={26} class="site-header__toggle-open" />
+      <Icon name="x" size={26} class="site-header__toggle-close" />
+    </button>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main" data-nav>
+      <ul class="site-nav__list">
+        {site.nav.map((item) =>
+          isNavGroup(item) ? (
+            <li class="site-nav__item site-nav__item--group" data-nav-group>
+              <button
+                class="site-nav__link site-nav__group-button"
+                type="button"
+                aria-expanded="false"
+                aria-controls={`site-nav-${item.id}`}
+                data-nav-group-button
+              >
+                {item.label}
+                <Icon name="chevron-down" size={18} class="site-nav__chevron" />
+              </button>
+              <ul id={`site-nav-${item.id}`} class="site-nav__submenu">
+                {item.children.map((child) => (
+                  <li>
+                    <a
+                      class="site-nav__link site-nav__sublink"
+                      href={child.href}
+                      aria-current={isCurrent(child.href) ? 'page' : undefined}
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li class="site-nav__item">
+              <a
+                class="site-nav__link"
+                href={item.href}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ),
+        )}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import { initMenu } from '../scripts/menu';
+
+  initMenu();
+</script>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: var(--z-header);
+    background: transparent;
+    transition:
+      background-color var(--duration-hover) var(--ease),
+      box-shadow var(--duration-hover) var(--ease);
+  }
+
+  /* Solid after 20px of scroll, and while the mobile menu is open */
+  .site-header.is-scrolled,
+  .site-header.is-open {
+    background: var(--color-header-solid);
+    box-shadow: var(--shadow-sm);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  /* The open mobile menu must fully cover the page behind it */
+  .site-header.is-open {
+    background: var(--color-white);
+  }
+
+  .site-header__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--header-height);
+  }
+
+  .site-header__brand {
+    display: inline-flex;
+    align-items: center;
+    padding-block: var(--space-1);
+    border-radius: var(--radius-sm);
+  }
+
+  .site-header__brand :global(img) {
+    width: auto;
+    height: 52px;
+  }
+
+  @media (min-width: 860px) {
+    .site-header__brand :global(img) {
+      height: 60px;
+    }
+  }
+
+  .site-header__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-right: calc(-1 * var(--space-2));
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+
+  .site-header__toggle :global(.site-header__toggle-close),
+  .site-header__toggle[aria-expanded='true'] :global(.site-header__toggle-open) {
+    display: none;
+  }
+
+  .site-header__toggle[aria-expanded='true'] :global(.site-header__toggle-close) {
+    display: block;
+  }
+
+  /* ----- Mobile: the nav is a panel under the bar ----- */
+
+  .site-nav {
+    display: none;
+    flex-basis: 100%;
+    padding-bottom: var(--space-4);
+  }
+
+  .site-header.is-open .site-nav {
+    display: block;
+  }
+
+  .site-nav__list,
+  .site-nav__submenu {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    width: 100%;
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-ink);
+    font-weight: 700;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--duration-hover) var(--ease);
+  }
+
+  .site-nav__link:hover {
+    background: var(--color-lavender-soft);
+  }
+
+  .site-nav__link[aria-current='page'] {
+    color: var(--color-crimson-deep);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+  }
+
+  /* Over a coloured hero (transparent header) crimson-deep may lack contrast: use ink */
+  .site-header:not(.is-scrolled, .is-open) .site-nav__link[aria-current='page'] {
+    color: var(--color-ink);
+  }
+
+  .site-nav__group-button :global(.site-nav__chevron) {
+    transition: transform var(--duration-hover) var(--ease);
+  }
+
+  .site-nav__group-button[aria-expanded='true'] :global(.site-nav__chevron) {
+    transform: rotate(180deg);
+  }
+
+  .site-nav__submenu {
+    display: none;
+    padding-left: var(--space-4);
+  }
+
+  .site-nav__group-button[aria-expanded='true'] + .site-nav__submenu {
+    display: block;
+  }
+
+  /* ----- Desktop: inline nav, "More" is a dropdown ----- */
+
+  @media (min-width: 860px) {
+    .site-header__toggle {
+      display: none;
+    }
+
+    .site-nav {
+      display: block;
+      flex-basis: auto;
+      padding-bottom: 0;
+    }
+
+    .site-nav__list {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .site-nav__link {
+      width: auto;
+      min-height: 44px;
+      padding-inline: var(--space-4);
+    }
+
+    .site-nav__item--group {
+      position: relative;
+    }
+
+    .site-nav__submenu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      min-width: 11rem;
+      padding: var(--space-2);
+      border-radius: var(--radius-sm);
+      background: var(--color-white);
+      box-shadow: var(--shadow);
+    }
+
+    .site-nav__sublink {
+      white-space: nowrap;
+    }
+  }
+
+  /* ----- No JavaScript: show every link, no toggles ----- */
+
+  :global(.no-js) .site-header {
+    position: static;
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+  }
+
+  :global(.no-js) .site-header__toggle,
+  :global(.no-js) .site-nav__group-button {
+    display: none;
+  }
+
+  :global(.no-js) .site-nav {
+    display: block;
+  }
+
+  :global(.no-js) .site-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  :global(.no-js) .site-nav__submenu {
+    position: static;
+    display: flex;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :global(.no-js) .site-nav__link {
+    width: auto;
+  }
+</style>

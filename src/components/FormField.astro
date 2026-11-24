@@ -1,0 +1,92 @@
+---
+/**
+ * A label, the control (slot) and the error text below it.
+ * The control must use id={id} and aria-describedby={`${id}-error`}.
+ */
+interface Props {
+  id: string;
+  label: string;
+  optional?: boolean;
+  class?: string;
+}
+
+const { id, label, optional = false, class: className } = Astro.props;
+---
+
+<div class:list={['field', className]}>
+  <label class="field__label" for={id}>
+    {label}
+    {optional && <span class="field__optional">(optional)</span>}
+  </label>
+  <slot />
+  <p class="field__error" id={`${id}-error`} data-field-error></p>
+</div>
+
+<style>
+  .field {
+    display: grid;
+    gap: var(--space-1);
+    align-content: start;
+  }
+
+  .field__label {
+    font-size: var(--text-small);
+    font-weight: 700;
+  }
+
+  .field__optional {
+    margin-left: var(--space-1);
+    font-weight: 400;
+  }
+
+  .field :global(input),
+  .field :global(select),
+  .field :global(textarea) {
+    width: 100%;
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    border: 2px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-white);
+    color: var(--color-ink);
+    transition: border-color var(--duration-hover) var(--ease);
+  }
+
+  .field :global(textarea) {
+    min-height: 9rem;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .field :global(input:hover),
+  .field :global(select:hover),
+  .field :global(textarea:hover) {
+    border-color: var(--color-ink);
+  }
+
+  /* :focus and :focus-within, not :focus-visible: the date field focuses its inner parts,
+     and a typing field should always show where the cursor is */
+  .field :global(input:focus),
+  .field :global(input:focus-within),
+  .field :global(select:focus),
+  .field :global(textarea:focus) {
+    border-color: var(--color-ink);
+    outline: 3px solid var(--color-ink);
+    outline-offset: 1px;
+  }
+
+  .field :global([aria-invalid='true']) {
+    border-color: var(--color-error);
+  }
+
+  .field__error {
+    margin: 0;
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-error);
+  }
+
+  .field__error:empty {
+    display: none;
+  }
+</style>

@@ -1,0 +1,13 @@
+dist/
+.astro/
+.wrangler/
+node_modules/
+package-lock.json
+worker-configuration.d.ts
+src/assets/icons/
+# Owner and planning documents keep their own formatting
+docs/
+CLAUDE.md
+PROMPT.md
+DESIGN.md
+.claude/

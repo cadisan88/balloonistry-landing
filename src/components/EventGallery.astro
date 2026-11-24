@@ -1,0 +1,116 @@
+---
+/**
+ * Event photos in arch frames, each with a coloured paper arch tucked behind it.
+ * On wider screens the middle arch sits higher, so the row feels hand placed.
+ */
+import { Picture } from 'astro:assets';
+import { eventGallery } from '../config/events';
+
+interface Props {
+  /** How many photos to show. Default: all. */
+  limit?: number;
+}
+
+const { limit } = Astro.props;
+const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
+---
+
+<ul class="event-gallery">
+  {photos.map((photo) => (
+    <li class="event-gallery__item reveal">
+      <div class="event-gallery__media zoom-out">
+        <Picture
+          src={photo.image}
+          alt={photo.alt}
+          formats={['avif', 'webp']}
+          widths={[400, 600, 900]}
+          sizes="(min-width: 1180px) 360px, (min-width: 600px) 30vw, 86vw"
+          loading="lazy"
+        />
+      </div>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .event-gallery {
+    display: grid;
+    gap: var(--space-7);
+    margin: 0;
+    padding: 0 var(--space-5) 0 0;
+    list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .event-gallery {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-6);
+      padding: var(--space-6) var(--space-4) 0 0;
+    }
+  }
+
+  .event-gallery__item {
+    position: relative;
+    width: min(100%, 18rem);
+  }
+
+  /* On phones the arches zigzag left and right instead of one long column */
+  .event-gallery__item:nth-child(even) {
+    justify-self: end;
+  }
+
+  @media (min-width: 600px) {
+    .event-gallery__item {
+      width: auto;
+    }
+  }
+
+  /* The paper arch behind each photo, in turn lavender, turquoise and orange */
+  .event-gallery__item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-arch);
+    background: var(--color-lavender);
+    transform: translate(var(--space-4), var(--space-4)) rotate(2.5deg);
+  }
+
+  .event-gallery__item:nth-child(3n + 2)::before {
+    background: var(--color-turquoise);
+    transform: translate(var(--space-4), var(--space-4)) rotate(-2deg);
+  }
+
+  .event-gallery__item:nth-child(3n + 3)::before {
+    background: var(--color-orange);
+  }
+
+  /* Each arch fades in a moment after the one before */
+  .event-gallery__item:nth-child(3n + 2) {
+    transition-delay: 0.12s;
+  }
+
+  .event-gallery__item:nth-child(3n + 3) {
+    transition-delay: 0.24s;
+  }
+
+  @media (min-width: 600px) {
+    .event-gallery__item:nth-child(3n + 2) {
+      margin-top: calc(-1 * var(--space-6));
+      margin-bottom: var(--space-6);
+    }
+  }
+
+  .event-gallery__media {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-arch);
+    background: var(--color-lavender-soft);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .event-gallery__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>

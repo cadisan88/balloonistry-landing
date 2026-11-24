@@ -1,0 +1,62 @@
+---
+/** Eyebrow, H2 and an optional intro. Fades in on scroll. */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  id?: string;
+  align?: 'start' | 'center';
+  /** Large italic display title (home page). */
+  display?: boolean;
+}
+
+const { eyebrow, title, id, align = 'start', display = false } = Astro.props;
+---
+
+<header
+  class:list={[
+    'section-header',
+    'reveal',
+    `section-header--${align}`,
+    { 'section-header--display': display },
+  ]}
+>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <h2 id={id}>{title}</h2>
+  <slot />
+</header>
+
+<style>
+  .section-header {
+    margin-bottom: var(--space-6);
+  }
+
+  .section-header > :global(:last-child) {
+    margin-bottom: 0;
+  }
+
+  .section-header--center {
+    text-align: center;
+  }
+
+  .section-header--center :global(p) {
+    margin-inline: auto;
+  }
+
+  .section-header--display {
+    margin-bottom: var(--space-7);
+  }
+
+  .section-header--display h2 {
+    max-width: 18ch;
+    margin-bottom: var(--space-4);
+    font-size: var(--text-display-2);
+    font-style: italic;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+  }
+
+  .section-header--display :global(p) {
+    max-width: 52ch;
+    font-size: 1.125rem;
+  }
+</style>

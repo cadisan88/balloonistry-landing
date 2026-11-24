@@ -1,0 +1,60 @@
+---
+/**
+ * The contact form next to the other channels.
+ * Used by the home page ("Connect with us") and the Contact page.
+ */
+import ChannelLinks from './ChannelLinks.astro';
+import ContactDetails from './ContactDetails.astro';
+import ContactForm from './ContactForm.astro';
+
+interface Props {
+  /** Prefix for the form field ids. */
+  idPrefix: string;
+  /** Show the address, phone and email under the channels. */
+  details?: boolean;
+  /** Heading level for "Prefer to chat?", one below the page section heading. */
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { idPrefix, details = false, headingLevel: Heading = 'h3' } = Astro.props;
+---
+
+<div class="connect">
+  <ContactForm type="contact" idPrefix={idPrefix} />
+  <aside class="connect__channels" aria-labelledby={`${idPrefix}-channels-title`}>
+    <Heading class="connect__title" id={`${idPrefix}-channels-title`}>
+      Prefer to chat?
+    </Heading>
+    <p>Message, text or call us. We are happy to help you plan your balloons.</p>
+    <ChannelLinks location="contact_section" intent="contact" />
+    {details && (
+      <div class="connect__details">
+        <Heading class="connect__title">Find us</Heading>
+        <ContactDetails />
+      </div>
+    )}
+  </aside>
+</div>
+
+<style>
+  .connect__title {
+    font-size: var(--text-h3);
+  }
+
+  .connect {
+    display: grid;
+    gap: var(--space-7);
+    align-items: start;
+  }
+
+  @media (min-width: 860px) {
+    .connect {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: var(--space-8);
+    }
+  }
+
+  .connect__details {
+    margin-top: var(--space-7);
+  }
+</style>

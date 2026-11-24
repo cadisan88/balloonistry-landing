@@ -1,0 +1,320 @@
+---
+/**
+ * The contact form (docs/SPEC.md section 8). Sends JSON to /api/contact.
+ * Behaviour: src/scripts/contact-form.ts. Rules: src/lib/contact/rules.ts.
+ */
+import { PUBLIC_TURNSTILE_SITE_KEY } from 'astro:env/client';
+import FormField from './FormField.astro';
+import Icon from './Icon.astro';
+import { site } from '../config/site';
+import { buildMessage, channelLinks, type ChannelLocation, type ProductRef } from '../lib/channels';
+import { EVENT_TYPE_LABELS, EVENT_TYPES, LIMITS, type FormType } from '../lib/contact/rules';
+
+interface Props {
+  type: FormType;
+  /** Prefix for the field ids. Must be unique on the page. */
+  idPrefix: string;
+  product?: ProductRef;
+  /** Text already in the message box. */
+  message?: string;
+  /** Location for the channel buttons inside the form (error and thank-you boxes). */
+  location?: ChannelLocation;
+}
+
+const { type, idPrefix, product, message = '', location = 'contact_section' } = Astro.props;
+const isQuote = type === 'event_quote';
+const id = (name: string) => `${idPrefix}-${name}`;
+const describedBy = (name: string) => `${id(name)}-error`;
+const whatsapp = channelLinks(buildMessage(product)).whatsapp;
+const submitLabel = isQuote
+  ? 'Request a quote'
+  : type === 'order'
+    ? 'Send my order request'
+    : 'Send message';
+---
+
+<div class="contact-form" data-contact-form data-form-type={type} data-product={product?.id}>
+  <form class="contact-form__form" novalidate data-form>
+    <input type="hidden" name="type" value={type} />
+    {product && <input type="hidden" name="product" value={product.id} />}
+    <input type="hidden" name="source" value={Astro.url.pathname} />
+
+    <!-- Honeypot: people never see or fill this field. -->
+    <div class="contact-form__trap" aria-hidden="true">
+      <label for={id('company')}>Company</label>
+      <input id={id('company')} type="text" name="company" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="contact-form__row">
+      <FormField id={id('firstName')} label="First name">
+        <input
+          id={id('firstName')}
+          name="firstName"
+          type="text"
+          autocomplete="given-name"
+          maxlength={LIMITS.nameMax}
+          required
+          aria-describedby={describedBy('firstName')}
+        />
+      </FormField>
+      <FormField id={id('lastName')} label="Last name">
+        <input
+          id={id('lastName')}
+          name="lastName"
+          type="text"
+          autocomplete="family-name"
+          maxlength={LIMITS.nameMax}
+          required
+          aria-describedby={describedBy('lastName')}
+        />
+      </FormField>
+    </div>
+
+    <div class="contact-form__row">
+      <FormField id={id('phone')} label="Phone">
+        <input
+          id={id('phone')}
+          name="phone"
+          type="tel"
+          inputmode="tel"
+          autocomplete="tel"
+          maxlength={30}
+          required
+          aria-describedby={describedBy('phone')}
+        />
+      </FormField>
+      <FormField id={id('email')} label="Email">
+        <input
+          id={id('email')}
+          name="email"
+          type="email"
+          autocomplete="email"
+          maxlength={LIMITS.emailMax}
+          required
+          aria-describedby={describedBy('email')}
+        />
+      </FormField>
+    </div>
+
+    {isQuote && (
+      <div class="contact-form__row contact-form__row--three">
+        <FormField id={id('eventDate')} label="Event date" optional>
+          <input
+            id={id('eventDate')}
+            name="eventDate"
+            type="date"
+            aria-describedby={describedBy('eventDate')}
+            data-min-today
+          />
+        </FormField>
+        <FormField id={id('eventType')} label="Event type" optional>
+          <select id={id('eventType')} name="eventType" aria-describedby={describedBy('eventType')}>
+            <option value="">Choose a type</option>
+            {EVENT_TYPES.map((eventType) => (
+              <option value={eventType}>{EVENT_TYPE_LABELS[eventType]}</option>
+            ))}
+          </select>
+        </FormField>
+        <FormField id={id('venueCity')} label="Venue city" optional>
+          <input
+            id={id('venueCity')}
+            name="venueCity"
+            type="text"
+            autocomplete="address-level2"
+            maxlength={LIMITS.venueCityMax}
+            aria-describedby={describedBy('venueCity')}
+          />
+        </FormField>
+      </div>
+    )}
+
+    <FormField id={id('message')} label="Message">
+      <textarea
+        id={id('message')}
+        name="message"
+        rows="6"
+        maxlength={LIMITS.messageMax}
+        required
+        aria-describedby={describedBy('message')}
+      >{message}</textarea>
+    </FormField>
+
+    <div
+      class="contact-form__turnstile"
+      data-turnstile
+      data-sitekey={PUBLIC_TURNSTILE_SITE_KEY}
+    ></div>
+    <p class="contact-form__status" role="alert" data-form-status></p>
+
+    <div class="contact-form__error" hidden data-form-error>
+      <p>Sorry, we could not send your message. Please call or text us at {site.phone.display}.</p>
+      <div class="btn-row">
+        <a
+          class="btn btn-ghost"
+          href={site.channels.phone}
+          data-channel="phone"
+          data-channel-location={location}
+        >
+          <Icon name="phone" />
+          Call {site.phone.display}
+        </a>
+        <a
+          class="btn btn-secondary"
+          href={whatsapp}
+          target="_blank"
+          rel="noopener"
+          data-channel="whatsapp"
+          data-channel-location={location}
+        >
+          <Icon name="whatsapp" />
+          Message us on WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <button class="btn btn-primary contact-form__submit" type="submit" data-submit>
+      <span data-submit-label>{submitLabel}</span>
+    </button>
+  </form>
+
+  <!-- Shown after a successful send. It can show the customer's text, so replay skips it. -->
+  <div class="contact-form__success ph-no-capture" hidden tabindex="-1" data-form-success>
+    <Icon name="check" size={32} />
+    <p>Thank you! We got your message and will reply soon, usually within one business day.</p>
+    <p>For urgent requests, message us on WhatsApp.</p>
+    <a
+      class="btn btn-secondary"
+      href={whatsapp}
+      target="_blank"
+      rel="noopener"
+      data-channel="whatsapp"
+      data-channel-location={location}
+    >
+      <Icon name="whatsapp" />
+      Message us on WhatsApp
+    </a>
+  </div>
+
+  <noscript>
+    <p class="contact-form__noscript">
+      Please call, text or WhatsApp us at {site.phone.display}.
+      <a href={site.channels.phone}>Call</a>,
+      <a href={channelLinks(buildMessage(product)).sms}>Text</a> or
+      <a href={whatsapp}>WhatsApp</a>
+    </p>
+  </noscript>
+</div>
+
+<script>
+  import { initContactForms } from '../scripts/contact-form';
+
+  initContactForms();
+</script>
+
+<style>
+  .contact-form {
+    padding: var(--space-5);
+    border-radius: var(--radius);
+    background: var(--color-white);
+    box-shadow: var(--shadow);
+  }
+
+  @media (min-width: 600px) {
+    .contact-form {
+      padding: var(--space-6);
+    }
+  }
+
+  .contact-form__form {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .contact-form__row {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 600px) {
+    .contact-form__row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .contact-form__row--three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* Off screen, not display:none, so simple bots still fill it */
+  .contact-form__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .contact-form__turnstile:empty {
+    display: none;
+  }
+
+  .contact-form__status {
+    margin: 0;
+    font-weight: 700;
+    color: var(--color-error);
+  }
+
+  .contact-form__status:empty {
+    display: none;
+  }
+
+  .contact-form__error {
+    padding: var(--space-4);
+    border-left: 4px solid var(--color-error);
+    border-radius: var(--radius-sm);
+    background: var(--color-lavender-soft);
+  }
+
+  .contact-form__error p {
+    font-weight: 700;
+  }
+
+  .contact-form__submit {
+    justify-self: start;
+  }
+
+  .contact-form__success {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+
+  .contact-form__success[hidden] {
+    display: none;
+  }
+
+  .contact-form__success > :global(.icon) {
+    color: var(--color-success);
+  }
+
+  .contact-form__success p {
+    margin: 0;
+  }
+
+  .contact-form__success p:first-of-type {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  /* Turnstile needs JavaScript, so the form does too. Without it, show the phone channels. */
+  :global(.no-js) .contact-form__form {
+    display: none;
+  }
+
+  .contact-form__noscript {
+    margin: 0;
+    font-weight: 700;
+  }
+</style>
