@@ -36,6 +36,19 @@ const categories = defineCollection({
     }),
 });
 
+const optionChoice = z.object({
+  label: z.string().min(1).max(60),
+  /** Added to the base price. */
+  price: z.number().nonnegative().default(0),
+});
+
+const optionGroup = z.object({
+  name: z.string().min(1).max(40),
+  /** single = radio (first choice is the default), multiple = checkboxes. */
+  type: z.enum(['single', 'multiple']),
+  choices: z.array(optionChoice).min(1).max(12),
+});
+
 const products = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/products' }),
   schema: ({ image }) =>
@@ -54,6 +67,23 @@ const products = defineCollection({
       /** false = hidden everywhere. */
       available: z.boolean().default(true),
       order: z.number().int().default(100),
+      /** 0-100, higher = more popular. Used by "Most popular". */
+      popularity: z.number().int().min(0).max(100).default(0),
+      /** Date the product was added. Used by "Newest". Missing sorts last. */
+      added: z.coerce.date().optional(),
+      /** Bullet list in the Features section. */
+      features: z.array(z.string().min(1)).default([]),
+      /** Optional videos, files in public/media/products/. */
+      videos: z
+        .array(
+          z.object({
+            src: z.string().startsWith('/media/'),
+            poster: image().optional(),
+          }),
+        )
+        .default([]),
+      /** Variations that change the price. */
+      options: z.array(optionGroup).max(6).default([]),
     }),
 });
 
@@ -92,4 +122,21 @@ const testimonials = defineCollection({
   }),
 });
 
-export const collections = { categories, products, faq, pages, policies, testimonials };
+/** Text shared by every product page. */
+const productInfo = defineCollection({
+  loader: file('./src/content/product-info.json'),
+  schema: z.object({
+    shipping: z.string().min(1),
+    returns: z.string().min(1),
+  }),
+});
+
+export const collections = {
+  categories,
+  products,
+  faq,
+  pages,
+  policies,
+  testimonials,
+  productInfo,
+};

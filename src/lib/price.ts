@@ -6,12 +6,17 @@
 
 export const NO_PRICE_LABEL = 'Request a quote';
 
-export function formatPrice(price: number | undefined): string {
-  if (price === undefined) return NO_PRICE_LABEL;
+/** "$75" or "$75.50": a CAD amount without a prefix. */
+export function formatAmount(price: number): string {
   const hasCents = !Number.isInteger(price);
   const amount = price.toLocaleString('en-CA', {
     minimumFractionDigits: hasCents ? 2 : 0,
     maximumFractionDigits: 2,
   });
-  return `From $${amount}`;
+  return `$${amount}`;
+}
+
+export function formatPrice(price: number | undefined): string {
+  if (price === undefined) return NO_PRICE_LABEL;
+  return `From ${formatAmount(price)}`;
 }

@@ -5,6 +5,7 @@ import defaultShareImage from '../assets/brand/og-default.jpg';
 import ChannelSheet from '../components/ChannelSheet.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import QuoteDrawer from '../components/QuoteDrawer.astro';
 import Toast from '../components/Toast.astro';
 import { site } from '../config/site';
 import type { PageType } from '../lib/analytics';
@@ -28,7 +29,7 @@ interface Props {
   jsonLd?: Record<string, unknown>[];
   /** Add the LocalBusiness structured data (home and contact pages). */
   business?: boolean;
-  /** true when the page starts with a hero that sits under the transparent header. */
+  /** true when the page starts with its own hero: no extra air under the fixed header. */
   hero?: boolean;
   /** false keeps the page out of search engines (404). */
   index?: boolean;
@@ -112,14 +113,17 @@ const structuredData = business ? [localBusinessJsonLd(shareUrl), ...jsonLd] : j
     </main>
     <Footer />
     <ChannelSheet product={product} formHref={formHref} />
+    <QuoteDrawer />
     <Toast />
     <script>
       import { initChannels } from '../scripts/channels';
+      import { initQuote } from '../scripts/quote';
       import { initReveal } from '../scripts/reveal';
       import { initTracking } from '../scripts/tracking';
 
       initReveal();
       initChannels();
+      initQuote();
       initTracking();
     </script>
   </body>

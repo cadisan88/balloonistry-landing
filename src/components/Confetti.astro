@@ -1,0 +1,393 @@
+---
+/**
+ * Decorative confetti layer (styles: `.confetti` in global.css).
+ * Put it inside a positioned parent. The pieces fall into place once on load, never loop,
+ * and are static under prefers-reduced-motion. Hidden from assistive technology.
+ *  - "frame": pieces around a framed photo (some sit outside the parent's box)
+ *  - "field": pieces spread over a whole area (menu, bands)
+ *
+ * Positions live in the CSS below, not in style attributes: the site's CSP blocks inline styles.
+ * Generated from a list of [x%, y%, rotation, colour, shape]; edit the CSS rules directly.
+ */
+interface Props {
+  variant?: 'frame' | 'field';
+  class?: string;
+}
+
+const shapes = {
+  frame: [
+    'bar',
+    'dot',
+    'wave',
+    'bar',
+    'bar',
+    'dot',
+    'bar',
+    'wave',
+    'dot',
+    'bar',
+    'dot',
+    'bar',
+    'wave',
+    'bar',
+    'dot',
+    'bar',
+    'dot',
+    'wave',
+    'bar',
+    'dot',
+    'bar',
+    'dot',
+  ],
+  field: [
+    'bar',
+    'dot',
+    'wave',
+    'bar',
+    'dot',
+    'bar',
+    'wave',
+    'dot',
+    'bar',
+    'bar',
+    'dot',
+    'bar',
+    'wave',
+    'bar',
+    'dot',
+    'bar',
+    'dot',
+    'bar',
+  ],
+} as const;
+
+const { variant = 'field', class: className } = Astro.props;
+---
+
+<div class:list={['confetti', `confetti--${variant}`, className]} aria-hidden="true">
+  {shapes[variant].map((shape) => (
+    <i data-s={shape === 'bar' ? undefined : shape} />
+  ))}
+</div>
+
+<style is:global>
+  .confetti--frame > i:nth-child(1) {
+    --x: -12%;
+    --y: 6%;
+    --r: 24deg;
+    --c: var(--color-orange);
+    --d: 0ms;
+  }
+
+  .confetti--frame > i:nth-child(2) {
+    --x: -6%;
+    --y: 18%;
+    --r: -38deg;
+    --c: var(--color-turquoise);
+    --d: 45ms;
+  }
+
+  .confetti--frame > i:nth-child(3) {
+    --x: -14%;
+    --y: 34%;
+    --r: 62deg;
+    --c: var(--color-crimson);
+    --d: 90ms;
+  }
+
+  .confetti--frame > i:nth-child(4) {
+    --x: -8%;
+    --y: 52%;
+    --r: -20deg;
+    --c: var(--color-lavender);
+    --d: 135ms;
+  }
+
+  .confetti--frame > i:nth-child(5) {
+    --x: -13%;
+    --y: 70%;
+    --r: 40deg;
+    --c: var(--color-turquoise);
+    --d: 180ms;
+  }
+
+  .confetti--frame > i:nth-child(6) {
+    --x: -5%;
+    --y: 86%;
+    --r: -55deg;
+    --c: var(--color-orange);
+    --d: 225ms;
+  }
+
+  .confetti--frame > i:nth-child(7) {
+    --x: 4%;
+    --y: 98%;
+    --r: 18deg;
+    --c: var(--color-crimson);
+    --d: 270ms;
+  }
+
+  .confetti--frame > i:nth-child(8) {
+    --x: 22%;
+    --y: 104%;
+    --r: -30deg;
+    --c: var(--color-lavender);
+    --d: 315ms;
+  }
+
+  .confetti--frame > i:nth-child(9) {
+    --x: 42%;
+    --y: 101%;
+    --r: 50deg;
+    --c: var(--color-orange);
+    --d: 360ms;
+  }
+
+  .confetti--frame > i:nth-child(10) {
+    --x: 64%;
+    --y: 106%;
+    --r: -14deg;
+    --c: var(--color-turquoise);
+    --d: 405ms;
+  }
+
+  .confetti--frame > i:nth-child(11) {
+    --x: 84%;
+    --y: 100%;
+    --r: 34deg;
+    --c: var(--color-crimson);
+    --d: 450ms;
+  }
+
+  .confetti--frame > i:nth-child(12) {
+    --x: 104%;
+    --y: 90%;
+    --r: -48deg;
+    --c: var(--color-lavender);
+    --d: 495ms;
+  }
+
+  .confetti--frame > i:nth-child(13) {
+    --x: 110%;
+    --y: 72%;
+    --r: 20deg;
+    --c: var(--color-orange);
+    --d: 540ms;
+  }
+
+  .confetti--frame > i:nth-child(14) {
+    --x: 102%;
+    --y: 54%;
+    --r: -64deg;
+    --c: var(--color-crimson);
+    --d: 585ms;
+  }
+
+  .confetti--frame > i:nth-child(15) {
+    --x: 108%;
+    --y: 38%;
+    --r: 28deg;
+    --c: var(--color-turquoise);
+    --d: 630ms;
+  }
+
+  .confetti--frame > i:nth-child(16) {
+    --x: 103%;
+    --y: 22%;
+    --r: -22deg;
+    --c: var(--color-orange);
+    --d: 675ms;
+  }
+
+  .confetti--frame > i:nth-child(17) {
+    --x: 112%;
+    --y: 8%;
+    --r: 52deg;
+    --c: var(--color-lavender);
+    --d: 720ms;
+  }
+
+  .confetti--frame > i:nth-child(18) {
+    --x: 92%;
+    --y: -4%;
+    --r: -36deg;
+    --c: var(--color-crimson);
+    --d: 765ms;
+  }
+
+  .confetti--frame > i:nth-child(19) {
+    --x: 72%;
+    --y: -8%;
+    --r: 16deg;
+    --c: var(--color-turquoise);
+    --d: 810ms;
+  }
+
+  .confetti--frame > i:nth-child(20) {
+    --x: 50%;
+    --y: -5%;
+    --r: -58deg;
+    --c: var(--color-orange);
+    --d: 855ms;
+  }
+
+  .confetti--frame > i:nth-child(21) {
+    --x: 28%;
+    --y: -9%;
+    --r: 36deg;
+    --c: var(--color-lavender);
+    --d: 900ms;
+  }
+
+  .confetti--frame > i:nth-child(22) {
+    --x: 10%;
+    --y: -4%;
+    --r: -12deg;
+    --c: var(--color-crimson);
+    --d: 945ms;
+  }
+
+  .confetti--field > i:nth-child(1) {
+    --x: 6%;
+    --y: 12%;
+    --r: 24deg;
+    --c: var(--color-orange);
+    --d: 0ms;
+  }
+
+  .confetti--field > i:nth-child(2) {
+    --x: 14%;
+    --y: 34%;
+    --r: -38deg;
+    --c: var(--color-turquoise);
+    --d: 45ms;
+  }
+
+  .confetti--field > i:nth-child(3) {
+    --x: 4%;
+    --y: 58%;
+    --r: 62deg;
+    --c: var(--color-crimson);
+    --d: 90ms;
+  }
+
+  .confetti--field > i:nth-child(4) {
+    --x: 12%;
+    --y: 82%;
+    --r: -20deg;
+    --c: var(--color-lavender);
+    --d: 135ms;
+  }
+
+  .confetti--field > i:nth-child(5) {
+    --x: 26%;
+    --y: 6%;
+    --r: 40deg;
+    --c: var(--color-crimson);
+    --d: 180ms;
+  }
+
+  .confetti--field > i:nth-child(6) {
+    --x: 30%;
+    --y: 92%;
+    --r: -55deg;
+    --c: var(--color-orange);
+    --d: 225ms;
+  }
+
+  .confetti--field > i:nth-child(7) {
+    --x: 42%;
+    --y: 14%;
+    --r: 18deg;
+    --c: var(--color-lavender);
+    --d: 270ms;
+  }
+
+  .confetti--field > i:nth-child(8) {
+    --x: 46%;
+    --y: 86%;
+    --r: -30deg;
+    --c: var(--color-turquoise);
+    --d: 315ms;
+  }
+
+  .confetti--field > i:nth-child(9) {
+    --x: 58%;
+    --y: 8%;
+    --r: 50deg;
+    --c: var(--color-orange);
+    --d: 360ms;
+  }
+
+  .confetti--field > i:nth-child(10) {
+    --x: 62%;
+    --y: 94%;
+    --r: -14deg;
+    --c: var(--color-crimson);
+    --d: 405ms;
+  }
+
+  .confetti--field > i:nth-child(11) {
+    --x: 72%;
+    --y: 20%;
+    --r: 34deg;
+    --c: var(--color-turquoise);
+    --d: 450ms;
+  }
+
+  .confetti--field > i:nth-child(12) {
+    --x: 76%;
+    --y: 80%;
+    --r: -48deg;
+    --c: var(--color-lavender);
+    --d: 495ms;
+  }
+
+  .confetti--field > i:nth-child(13) {
+    --x: 86%;
+    --y: 10%;
+    --r: 20deg;
+    --c: var(--color-crimson);
+    --d: 540ms;
+  }
+
+  .confetti--field > i:nth-child(14) {
+    --x: 92%;
+    --y: 36%;
+    --r: -64deg;
+    --c: var(--color-orange);
+    --d: 585ms;
+  }
+
+  .confetti--field > i:nth-child(15) {
+    --x: 96%;
+    --y: 60%;
+    --r: 28deg;
+    --c: var(--color-turquoise);
+    --d: 630ms;
+  }
+
+  .confetti--field > i:nth-child(16) {
+    --x: 88%;
+    --y: 88%;
+    --r: -22deg;
+    --c: var(--color-crimson);
+    --d: 675ms;
+  }
+
+  .confetti--field > i:nth-child(17) {
+    --x: 20%;
+    --y: 52%;
+    --r: 52deg;
+    --c: var(--color-orange);
+    --d: 720ms;
+  }
+
+  .confetti--field > i:nth-child(18) {
+    --x: 80%;
+    --y: 50%;
+    --r: -36deg;
+    --c: var(--color-lavender);
+    --d: 765ms;
+  }
+</style>

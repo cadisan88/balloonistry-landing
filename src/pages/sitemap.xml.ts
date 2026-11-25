@@ -23,6 +23,7 @@ export const GET: APIRoute = async () => {
     ...categories.map((category) => `/shop/${category.id}/`),
     ...products.map((product) => `/products/${product.id}/`),
     '/events/',
+    '/corporate/',
     '/contact/',
     '/faq/',
     '/about/',

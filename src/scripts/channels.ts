@@ -1,12 +1,12 @@
 /**
  * Channel button behaviour shared by every page:
- * - Instagram and Messenger: copy the message, show a toast, then open the chat.
+ * - Instagram: copy the message, show a toast, then open the chat.
  * - "Order with the form" with an on-page anchor: scroll to the form and focus the first field.
  */
 import { track } from '../lib/analytics';
 import { showToast } from './toast';
 
-const COPIED_TEXT = 'Message copied. Paste it in the chat.';
+const COPIED_TEXT = 'Message copied. Paste it in Instagram.';
 
 /** Scrolls to a form section and puts the cursor in its first empty field. */
 export function goToForm(target: HTMLElement): void {
@@ -34,7 +34,7 @@ export function initChannels(): void {
         () => {
           showToast(COPIED_TEXT);
           const channel = link.dataset.channel;
-          if (channel === 'instagram' || channel === 'messenger') {
+          if (channel === 'instagram') {
             track('message_copied', { channel, product: link.dataset.product || undefined });
           }
         },

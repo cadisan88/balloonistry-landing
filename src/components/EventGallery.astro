@@ -17,7 +17,7 @@ const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
 
 <ul class="event-gallery">
   {photos.map((photo) => (
-    <li class="event-gallery__item reveal">
+    <li class="event-gallery__item">
       <div class="event-gallery__media zoom-out">
         <Picture
           src={photo.image}

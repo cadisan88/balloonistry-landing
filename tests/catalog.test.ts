@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   availableProducts,
+  compareProducts,
   featuredProducts,
   listedProducts,
   productsInCategory,
   relatedProducts,
+  isSortKey,
   sortByOrder,
+  sortProducts,
+  SORT_KEYS,
   visibleCategories,
   visibleCategoryIdsOf,
   type CategoryLike,
@@ -145,5 +149,102 @@ describe('relatedProducts', () => {
   it('returns nothing when the product has no visible category', () => {
     const lonely = product('lonely', ['seasonal']);
     expect(relatedProducts(lonely, [...products, lonely], categories)).toEqual([]);
+  });
+});
+
+describe('sortProducts', () => {
+  const day = (iso: string) => new Date(iso);
+  const items = [
+    product('a', ['art'], {
+      name: 'A',
+      order: 30,
+      price: 50,
+      popularity: 10,
+      added: day('2026-10-01'),
+    }),
+    product('b', ['art'], {
+      name: 'B',
+      order: 10,
+      price: 30,
+      popularity: 90,
+      added: day('2026-11-15'),
+    }),
+    product('c', ['art'], { name: 'C', order: 20, popularity: 90 }),
+    product('d', ['art'], {
+      name: 'D',
+      order: 40,
+      price: 30,
+      popularity: 0,
+      added: day('2026-11-15'),
+    }),
+  ];
+
+  it('knows the sort keys', () => {
+    expect(SORT_KEYS).toHaveLength(5);
+    expect(isSortKey('popular')).toBe(true);
+    expect(isSortKey('cheapest')).toBe(false);
+    expect(isSortKey(undefined)).toBe(false);
+  });
+
+  it('recommended = order, then name', () => {
+    expect(ids(sortProducts(items, 'recommended'))).toEqual(['b', 'c', 'a', 'd']);
+  });
+
+  it('price ascending, missing price last, ties by order', () => {
+    expect(ids(sortProducts(items, 'price-asc'))).toEqual(['b', 'd', 'a', 'c']);
+  });
+
+  it('price descending, missing price last', () => {
+    expect(ids(sortProducts(items, 'price-desc'))).toEqual(['a', 'b', 'd', 'c']);
+  });
+
+  it('popular: highest first, then order', () => {
+    expect(ids(sortProducts(items, 'popular'))).toEqual(['b', 'c', 'a', 'd']);
+  });
+
+  it('newest: latest first, missing date last, ties by order', () => {
+    expect(ids(sortProducts(items, 'newest'))).toEqual(['b', 'd', 'a', 'c']);
+  });
+
+  it('does not change the input', () => {
+    const before = ids(items);
+    sortProducts(items, 'price-desc');
+    expect(ids(items)).toEqual(before);
+  });
+});
+
+describe('compareProducts', () => {
+  // The browser sorts with this comparator, so it must give the same order as sortProducts
+  const rows = [
+    { name: 'A', order: 30, price: 50, popularity: 10, added: Date.parse('2026-10-01') },
+    { name: 'B', order: 10, price: 30, popularity: 90, added: Date.parse('2026-11-15') },
+    { name: 'C', order: 20, popularity: 90 },
+    { name: 'D', order: 40, price: 30, popularity: 0, added: Date.parse('2026-11-15') },
+  ];
+  const names = (key: (typeof SORT_KEYS)[number]) =>
+    [...rows].sort(compareProducts(key)).map((row) => row.name);
+
+  it('matches sortProducts for every key', () => {
+    const items = rows.map((row) =>
+      product(row.name, ['art'], {
+        name: row.name,
+        order: row.order,
+        price: row.price,
+        popularity: row.popularity,
+        added: row.added === undefined ? undefined : new Date(row.added),
+      }),
+    );
+    for (const key of SORT_KEYS) {
+      expect(names(key)).toEqual(sortProducts(items, key).map((item) => item.id));
+    }
+  });
+
+  it('breaks ties by order, then name', () => {
+    expect(names('price-asc')).toEqual(['B', 'D', 'A', 'C']);
+    const same = [
+      { name: 'Z', order: 5 },
+      { name: 'A', order: 5 },
+    ];
+    expect(same.sort(compareProducts('recommended')).map((row) => row.name)).toEqual(['A', 'Z']);
   });
 });

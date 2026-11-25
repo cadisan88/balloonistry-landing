@@ -4,12 +4,19 @@
  */
 import { site } from '../config/site';
 
-export const CHANNELS = ['form', 'whatsapp', 'sms', 'phone', 'instagram', 'messenger'] as const;
+export const CHANNELS = ['whatsapp', 'instagram', 'sms', 'phone', 'form'] as const;
 export type Channel = (typeof CHANNELS)[number];
 
 /** Where a channel button is shown. Sent with the `order_channel_clicked` event. */
 export type ChannelLocation =
-  'product_panel' | 'channel_sheet' | 'contact_section' | 'footer' | 'events' | 'category_empty';
+  | 'product_panel'
+  | 'channel_sheet'
+  | 'contact_section'
+  | 'footer'
+  | 'events'
+  | 'category_empty'
+  | 'quote_drawer'
+  | 'corporate';
 
 export interface ProductRef {
   id: string;
@@ -46,16 +53,14 @@ export interface ChannelLinks {
   sms: string;
   phone: string;
   instagram: string;
-  messenger: string;
 }
 
-/** WhatsApp and SMS carry the message. Phone, Instagram and Messenger cannot. */
+/** WhatsApp and SMS carry the message. Phone and Instagram cannot. */
 export function channelLinks(message: string): ChannelLinks {
   return {
     whatsapp: whatsappLink(message),
     sms: smsLink(message),
     phone: site.channels.phone,
     instagram: site.channels.instagram,
-    messenger: site.channels.messenger,
   };
 }

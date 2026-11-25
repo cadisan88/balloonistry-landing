@@ -2,7 +2,7 @@
  * Loads the collections and applies the display rules from catalog.ts.
  * Pages use these helpers and never filter products or categories themselves.
  */
-import { getCollection, type CollectionEntry } from 'astro:content';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import * as catalog from './catalog';
 
 export type Product = CollectionEntry<'products'>;
@@ -52,4 +52,10 @@ export async function getCategoriesOf(product: Product): Promise<Category[]> {
   const categories = await getCollection('categories');
   const ids = catalog.visibleCategoryIdsOf(product, categories);
   return ids.flatMap((id) => categories.find((category) => category.id === id) ?? []);
+}
+
+/** Shipping and returns text shown on every product page. */
+export async function getProductInfo(): Promise<{ shipping: string; returns: string }> {
+  const entry = await getEntry('productInfo', 'default');
+  return { shipping: entry?.data.shipping ?? '', returns: entry?.data.returns ?? '' };
 }

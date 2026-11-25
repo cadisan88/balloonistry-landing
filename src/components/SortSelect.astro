@@ -1,0 +1,70 @@
+---
+/**
+ * "Sort by" select for the shop toolbar. Behaviour: src/scripts/shop-sort.ts.
+ * Without JavaScript the select is hidden and the default order shows.
+ */
+import { SORT_KEYS, type SortKey } from '../lib/catalog';
+
+interface Props {
+  /** Sent with the `sort_changed` event. */
+  location: 'shop' | 'category';
+}
+
+const { location } = Astro.props;
+
+const LABELS: Record<SortKey, string> = {
+  recommended: 'Recommended',
+  'price-asc': 'Price: low to high',
+  'price-desc': 'Price: high to low',
+  popular: 'Most popular',
+  newest: 'Newest',
+};
+---
+
+<div class="sort">
+  <label class="sort__label" for="sort-select">
+    Sort by
+  </label>
+  <select class="sort__select" id="sort-select" data-sort-select data-location={location}>
+    {SORT_KEYS.map((key) => (
+      <option value={key} selected={key === 'recommended'}>
+        {LABELS[key]}
+      </option>
+    ))}
+  </select>
+</div>
+
+<script>
+  import { initShopSort } from '../scripts/shop-sort';
+
+  initShopSort();
+</script>
+
+<style>
+  .sort {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .sort__label {
+    font-size: var(--text-small);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .sort__select {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Sorting needs JavaScript */
+  :global(.no-js) .sort {
+    display: none;
+  }
+</style>

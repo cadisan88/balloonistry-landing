@@ -8,7 +8,13 @@ import FormField from './FormField.astro';
 import Icon from './Icon.astro';
 import { site } from '../config/site';
 import { buildMessage, channelLinks, type ChannelLocation, type ProductRef } from '../lib/channels';
-import { EVENT_TYPE_LABELS, EVENT_TYPES, LIMITS, type FormType } from '../lib/contact/rules';
+import {
+  EVENT_TYPE_LABELS,
+  EVENT_TYPES,
+  LIMITS,
+  type EventType,
+  type FormType,
+} from '../lib/contact/rules';
 
 interface Props {
   type: FormType;
@@ -19,9 +25,18 @@ interface Props {
   message?: string;
   /** Location for the channel buttons inside the form (error and thank-you boxes). */
   location?: ChannelLocation;
+  /** Event type already chosen in the quote form (for example on the Corporate page). */
+  eventType?: EventType;
 }
 
-const { type, idPrefix, product, message = '', location = 'contact_section' } = Astro.props;
+const {
+  type,
+  idPrefix,
+  product,
+  message = '',
+  location = 'contact_section',
+  eventType: chosenType,
+} = Astro.props;
 const isQuote = type === 'event_quote';
 const id = (name: string) => `${idPrefix}-${name}`;
 const describedBy = (name: string) => `${id(name)}-error`;
@@ -111,7 +126,9 @@ const submitLabel = isQuote
           <select id={id('eventType')} name="eventType" aria-describedby={describedBy('eventType')}>
             <option value="">Choose a type</option>
             {EVENT_TYPES.map((eventType) => (
-              <option value={eventType}>{EVENT_TYPE_LABELS[eventType]}</option>
+              <option value={eventType} selected={eventType === chosenType}>
+                {EVENT_TYPE_LABELS[eventType]}
+              </option>
             ))}
           </select>
         </FormField>

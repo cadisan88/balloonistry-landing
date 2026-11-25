@@ -48,10 +48,10 @@ describe('channel links', () => {
     expect(decodeURIComponent(link.split('?&body=')[1] ?? '')).toBe(message);
   });
 
-  it('keeps phone, Instagram and Messenger links without a message', () => {
+  it('keeps phone and Instagram links without a message', () => {
     const links = channelLinks(message);
     expect(links.phone).toBe('tel:+12269786720');
     expect(links.instagram).toBe('https://ig.me/m/theballoonistry');
-    expect(links.messenger).toBe('https://m.me/61583352010917');
+    expect(links).not.toHaveProperty('messenger');
   });
 });

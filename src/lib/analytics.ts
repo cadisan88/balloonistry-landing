@@ -5,6 +5,7 @@
  * - Events sent before PostHog has loaded wait in a short queue.
  * - Never put personal data in properties: no names, emails, phones or message text.
  */
+import type { SortKey } from './catalog';
 import type { Channel, ChannelLocation } from './channels';
 import type { FormType } from './contact/rules';
 
@@ -14,6 +15,7 @@ export const PAGE_TYPES = [
   'category',
   'product',
   'events',
+  'corporate',
   'contact',
   'faq',
   'about',
@@ -28,19 +30,49 @@ export type ProductList = (typeof PRODUCT_LISTS)[number];
 export const CATEGORY_LOCATIONS = ['home', 'shop', 'category'] as const;
 export type CategoryLocation = (typeof CATEGORY_LOCATIONS)[number];
 
+export const QUOTE_ADD_LOCATIONS = ['product_page', 'product_card'] as const;
+export type QuoteAddLocation = (typeof QUOTE_ADD_LOCATIONS)[number];
+
+export const QUOTE_CHANNELS = ['whatsapp', 'instagram', 'sms', 'phone'] as const;
+export type QuoteChannel = (typeof QUOTE_CHANNELS)[number];
+
+export const MEDIA_KINDS = ['image', 'video'] as const;
+export type MediaKind = (typeof MEDIA_KINDS)[number];
+
+export const MEDIA_LOCATIONS = ['home', 'product_page'] as const;
+export type MediaLocation = (typeof MEDIA_LOCATIONS)[number];
+
+export const SORT_LOCATIONS = ['shop', 'category'] as const;
+export type SortLocation = (typeof SORT_LOCATIONS)[number];
+
 /** Every event and its properties. Nothing else can be sent. */
 export interface AnalyticsEvents {
   product_viewed: { product: string; price?: number; categories: string[] };
   product_card_clicked: { product: string; list: ProductList; position: number };
   category_clicked: { category: string; location: CategoryLocation };
   order_channel_clicked: { channel: Channel; location: ChannelLocation; product?: string };
-  message_copied: { channel: 'instagram' | 'messenger'; product?: string };
+  message_copied: { channel: 'instagram'; product?: string };
   form_started: { form_type: FormType; product?: string };
   form_validation_error: { form_type: FormType; fields: string[] };
   form_submitted: { form_type: FormType; product?: string; time_to_submit_s: number };
   form_failed: { form_type: FormType; status: number | 'network' };
   quote_cta_clicked: { location: string };
   floating_order_opened: { page_type: PageType };
+  quote_item_added: {
+    product: string;
+    qty: number;
+    options: number;
+    unit_price?: number;
+    location: QuoteAddLocation;
+  };
+  quote_list_opened: { items: number };
+  quote_sent: {
+    channel: QuoteChannel;
+    items: number;
+    estimated_total?: number;
+  };
+  media_opened: { product: string; kind: MediaKind; location: MediaLocation };
+  sort_changed: { sort: SortKey; location: SortLocation };
 }
 export type AnalyticsEvent = keyof AnalyticsEvents;
 

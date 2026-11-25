@@ -1,24 +1,37 @@
 ---
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CategoryChips from '../../components/CategoryChips.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
+import SortSelect from '../../components/SortSelect.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getListedProducts } from '../../lib/content';
+import { breadcrumbJsonLd } from '../../lib/seo';
 
 const products = await getListedProducts();
+
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Shop', path: '/shop/' },
+];
 ---
 
 <BaseLayout
   title="Shop"
   description="Shop custom balloon gifts from Balloonistry in Kitchener-Waterloo: hot air balloons, gift balloons, bouquets, encapsulated balloons and more."
   pageType="shop"
+  jsonLd={[breadcrumbJsonLd(crumbs)]}
 >
   <section class="container shop">
+    <Breadcrumbs crumbs={crumbs} />
     <header class="shop__header">
       <p class="eyebrow">Shop</p>
       <h1>Our balloons</h1>
       <p>Browse our balloon gifts. Every design can be customized.</p>
     </header>
-    <CategoryChips location="shop" />
+    <div class="shop__toolbar">
+      <CategoryChips location="shop" />
+      {products.length > 1 && <SortSelect location="shop" />}
+    </div>
     <ProductGrid products={products} list="shop" heading="h2" />
   </section>
 </BaseLayout>
@@ -34,5 +47,28 @@ const products = await getListedProducts();
 
   .shop__header > :last-child {
     margin-bottom: 0;
+  }
+
+  .shop__toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 860px) {
+    .shop__toolbar {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: var(--space-5);
+    }
+  }
+</style>
+
+<style is:global>
+  /* Phones: the breadcrumbs sit close under the header */
+  @media (max-width: 599px) {
+    main.page-top {
+      padding-top: calc(var(--header-height) + var(--space-2));
+    }
   }
 </style>

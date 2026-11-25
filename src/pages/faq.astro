@@ -35,8 +35,8 @@ const structured = faqJsonLd(
   pageType="faq"
   jsonLd={structured ? [structured] : []}
 >
-  <section class="container faq">
-    <header class="faq__header">
+  <section class="container container--narrow faq">
+    <header class="page-head">
       <p class="eyebrow">FAQ</p>
       <h1>Frequently asked questions</h1>
     </header>
@@ -65,29 +65,36 @@ const structured = faqJsonLd(
 
 <style>
   .faq {
-    max-width: 52rem;
     padding-bottom: var(--section-pad);
   }
 
-  .faq__header {
-    margin-bottom: var(--space-7);
-  }
-
   .faq__group + .faq__group {
-    margin-top: var(--space-7);
+    margin-top: var(--space-8);
   }
 
   .faq__group h2 {
-    font-size: var(--text-h3);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-h2);
   }
 
+  /* Each question is a crisp white card */
   .faq__item {
-    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-3);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--duration-hover) var(--ease);
+  }
+
+  .faq__item[open] {
+    border-color: var(--color-ink);
   }
 
   .faq__item summary {
     position: relative;
-    padding: var(--space-4) var(--space-7) var(--space-4) 0;
+    padding: var(--space-4) var(--space-8) var(--space-4) var(--space-5);
+    border-radius: var(--radius);
     font-weight: 700;
     cursor: pointer;
     list-style: none;
@@ -102,9 +109,9 @@ const structured = faqJsonLd(
     content: '+';
     position: absolute;
     top: 50%;
-    right: var(--space-2);
+    right: var(--space-5);
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     line-height: 1;
     color: var(--color-crimson-deep);
     transform: translateY(-50%);
@@ -115,17 +122,17 @@ const structured = faqJsonLd(
   }
 
   .faq__answer {
-    padding-bottom: var(--space-5);
+    padding: 0 var(--space-5) var(--space-5);
   }
 
   .faq__more {
     margin-top: var(--space-8);
     padding: var(--space-6) var(--space-5);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--color-lavender-soft);
   }
 
   .faq__more h2 {
-    font-size: var(--text-h3);
+    font-size: var(--text-h2);
   }
 </style>

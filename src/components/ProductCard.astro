@@ -1,5 +1,5 @@
 ---
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import ProductTags from './ProductTags.astro';
 import type { Product } from '../lib/content';
 import { formatPrice } from '../lib/price';
@@ -14,29 +14,62 @@ interface Props {
   position: number;
   /** The heading level must fit the page outline. */
   heading?: 'h2' | 'h3';
+  /** The photo opens the lightbox (the home page). Otherwise the photo links to the product. */
+  zoomable?: boolean;
 }
 
-const { product, list, position, heading: Heading = 'h3' } = Astro.props;
-const { name, price, tags, images, imageAlt } = product.data;
+const { product, list, position, heading: Heading = 'h3', zoomable = false } = Astro.props;
+const { name, price, tags, images, imageAlt, options } = product.data;
 const [mainImage] = images;
 const href = `/products/${product.id}/`;
+const alt = imageAlt ?? name;
+
+// A large image for the lightbox, and a small one for the quote list
+const full =
+  zoomable && mainImage
+    ? await getImage({ src: mainImage, width: 1600, format: 'webp' })
+    : undefined;
+const thumb = mainImage
+  ? await getImage({ src: mainImage, width: 160, height: 160, format: 'webp', fit: 'cover' })
+  : undefined;
+
+// Products with options need a choice first, so the card links to the product page
+const canAddDirectly = options.length === 0;
+const photoProps =
+  zoomable && full
+    ? {
+        type: 'button' as const,
+        'aria-label': `View a larger photo of ${name}`,
+        'data-lightbox-group': list,
+        'data-lightbox-index': String(position - 1),
+        'data-full': full.src,
+        'data-alt': alt,
+        'data-media-open': '',
+        'data-product': product.id,
+        'data-media-kind': 'image',
+        'data-media-location': 'home',
+      }
+    : {};
+const Photo = zoomable && full ? 'button' : 'div';
 ---
 
 <article class="product-card">
-  <div class="product-card__media zoom-out">
-    {mainImage && (
-      <Picture
-        src={mainImage}
-        /* The name follows right below, so the default alt would only repeat it. */
-        alt={imageAlt ?? ''}
-        formats={['avif', 'webp']}
-        widths={[240, 360, 480, 720]}
-        sizes="(min-width: 1180px) 275px, (min-width: 860px) 24vw, (min-width: 600px) 31vw, 46vw"
-        width={720}
-        height={720}
-        loading="lazy"
-      />
-    )}
+  <div class="product-card__media">
+    <Photo class="product-card__photo" {...photoProps}>
+      {mainImage && (
+        <Picture
+          src={mainImage}
+          /* The name follows right below, so the default alt would only repeat it. */
+          alt={zoomable ? '' : (imageAlt ?? '')}
+          formats={['avif', 'webp']}
+          widths={[240, 360, 480, 720]}
+          sizes="(min-width: 1180px) 275px, (min-width: 860px) 24vw, (min-width: 600px) 31vw, 46vw"
+          width={720}
+          height={720}
+          loading="lazy"
+        />
+      )}
+    </Photo>
     <ProductTags tags={tags} class="product-card__tags" />
   </div>
   <div class="product-card__body">
@@ -53,6 +86,31 @@ const href = `/products/${product.id}/`;
       </a>
     </Heading>
     <p class="product-card__price">{formatPrice(price)}</p>
+    {canAddDirectly ? (
+      <button
+        class="btn btn-secondary product-card__action"
+        type="button"
+        data-quote-add
+        data-product={product.id}
+        data-product-name={name}
+        data-product-url={href}
+        data-product-image={thumb?.src}
+        data-base-price={price}
+        data-qty="1"
+        data-options="0"
+        data-unit-price={price}
+        data-quote-location="product_card"
+        data-quote-options="[]"
+      >
+        Add to quote
+        <span class="visually-hidden">: {name}</span>
+      </button>
+    ) : (
+      <a class="btn btn-secondary product-card__action" href={href}>
+        Choose options
+        <span class="visually-hidden">: {name}</span>
+      </a>
+    )}
   </div>
 </article>
 
@@ -86,16 +144,45 @@ const href = `/products/${product.id}/`;
     outline: none;
   }
 
+  /* The photo zooms inside its frame (overflow hidden) */
   .product-card__media {
     position: relative;
     aspect-ratio: 1;
     background: var(--color-lavender-soft);
+    overflow: hidden;
   }
 
-  .product-card__media :global(img) {
+  .product-card__photo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  /* The photo button sits above the full-card link, so a click on it opens the lightbox */
+  button.product-card__photo {
+    position: relative;
+    z-index: 2;
+    cursor: zoom-in;
+  }
+
+  button.product-card__photo:focus-visible {
+    outline-offset: -3px;
+  }
+
+  .product-card__photo :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 500ms var(--ease);
+  }
+
+  .product-card:hover .product-card__photo :global(img),
+  .product-card__photo:focus-visible :global(img) {
+    transform: scale(1.08);
   }
 
   .product-card__media :global(.product-card__tags) {
@@ -103,6 +190,8 @@ const href = `/products/${product.id}/`;
     top: var(--space-3);
     left: var(--space-3);
     right: var(--space-3);
+    z-index: 3;
+    pointer-events: none;
   }
 
   .product-card__body {
@@ -137,13 +226,28 @@ const href = `/products/${product.id}/`;
   }
 
   .product-card__price {
-    margin: 0;
+    margin: 0 0 var(--space-3);
     font-weight: 700;
     color: var(--color-crimson-deep);
   }
 
+  /* Above the full-card link, so the button and the link work on their own */
+  .product-card__action {
+    position: relative;
+    z-index: 2;
+    min-height: 44px;
+    margin-top: auto;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-small);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .product-card:hover {
+      transform: none;
+    }
+
+    .product-card:hover .product-card__photo :global(img),
+    .product-card__photo:focus-visible :global(img) {
       transform: none;
     }
   }

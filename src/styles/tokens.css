@@ -1,48 +1,56 @@
 /*
- * Design tokens. See docs/STYLE_GUIDE.md.
+ * Design tokens. See docs/STYLE_GUIDE.md and docs/REDESIGN.md.
  * This is the only file where raw colour values are allowed.
  */
 :root {
   /* Brand colours (approved). None of them is dark enough for text on white:
      text on them is always ink, and they are never used for text themselves. */
-  --color-turquoise: #72c0a6; /* secondary buttons, the "New" tag, accents */
-  --color-lavender: #b397c7; /* gray lavender: chips, soft backgrounds, decorative shapes */
-  --color-crimson: #e55584; /* logo balloon, icons, decorative shapes (3:1 graphics only) */
-  --color-orange: #f3b243; /* primary buttons, the floating Order button */
-  --color-white: #ffffff; /* page background, cards, form fields */
+  --color-turquoise: #72c0a6; /* fills, shapes, the "New" sticker */
+  --color-lavender: #b397c7; /* gray lavender: chips, fills, decorative shapes */
+  --color-crimson: #e55584; /* logo balloon, icons, squiggle (3:1 graphics only) */
+  --color-orange: #f3b243; /* primary buttons, step numbers */
+  --color-white: #ffffff; /* cards, form fields */
 
   /* Support colours (for readable text, not brand accents) */
-  --color-ink: #2b2540; /* text, the footer, focus rings */
+  --color-ink: #2b2540; /* text, the dark band, the footer, focus rings */
   --color-crimson-deep: #9b4269; /* crimson darkened with ink: links, prices, small labels */
+  /* Channel icon colours (graphics only, 3:1 or better on white) */
+  --color-whatsapp: #128c4a;
+  --color-instagram: #c13584;
   --color-error: #b3261e;
   --color-success: #1e7a4c;
 
   /* Derived colours */
   --color-orange-hover: color-mix(in srgb, var(--color-orange) 88%, var(--color-ink));
   --color-turquoise-hover: color-mix(in srgb, var(--color-turquoise) 85%, var(--color-ink));
-  --color-lavender-soft: color-mix(in srgb, var(--color-lavender) 25%, var(--color-white));
-  --color-turquoise-soft: color-mix(in srgb, var(--color-turquoise) 25%, var(--color-white));
-  /* Warm cream page background (home page), mixed from the brand orange */
+  --color-lavender-soft: color-mix(in srgb, var(--color-lavender) 20%, var(--color-white));
+  --color-turquoise-soft: color-mix(in srgb, var(--color-turquoise) 20%, var(--color-white));
+  /* Warm cream page ground, mixed from the brand orange */
   --color-cream: color-mix(in srgb, var(--color-orange) 9%, var(--color-white));
   --color-border: color-mix(in srgb, var(--color-ink) 18%, var(--color-white));
   --color-border-strong: color-mix(in srgb, var(--color-ink) 55%, var(--color-white));
   --color-on-dark-muted: color-mix(in srgb, var(--color-white) 78%, var(--color-ink));
-  --color-header-solid: color-mix(in srgb, var(--color-white) 94%, transparent);
+  --color-header-solid: var(--color-cream);
+  /* 1px hairlines on light grounds and on the ink band */
+  --color-hairline: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  --color-hairline-on-dark: color-mix(in srgb, var(--color-white) 22%, transparent);
 
-  /* Typography */
+  /* Typography. Headlines: big, tight, italic Fraunces. Body: Nunito 17px / 1.65. */
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-nunito), system-ui, sans-serif;
-  --text-h1: clamp(2.25rem, 5vw, 4rem);
-  /* Home page display sizes: big, tight, italic Fraunces */
-  --text-display-1: clamp(3rem, 8vw, 6rem);
-  --text-display-2: clamp(2.25rem, 5vw, 3.75rem);
-  --text-h2: clamp(1.75rem, 3.5vw, 2.75rem);
-  --text-h3: 1.25rem;
+  --text-display-1: clamp(3.25rem, 9vw, 6.5rem); /* home hero h1 */
+  --text-display-2: clamp(2.5rem, 6vw, 4.25rem); /* section headings */
+  --text-h1: clamp(2.5rem, 6.5vw, 4.5rem); /* page titles */
+  --text-h2: clamp(2rem, 4.5vw, 3rem); /* smaller h2 inside content */
+  --text-h3: 1.375rem;
+  --text-lead: 1.1875rem;
   --text-body: 1.0625rem;
   --text-small: 0.875rem;
   --text-eyebrow: 0.8rem;
   --leading-body: 1.65;
   --leading-heading: 1.15;
+  --leading-display: 1.02;
+  --tracking-display: -0.02em;
   --measure: 65ch;
 
   /* Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64, 96 px */
@@ -58,9 +66,10 @@
 
   /* Layout. Breakpoints (CSS cannot use variables in media queries): 600px, 860px, 1180px */
   --content-max: 1180px;
+  --content-narrow: 52rem;
   --gutter: var(--space-4);
   --section-pad: var(--space-8);
-  --header-height: 4rem;
+  --header-height: 4.25rem;
 
   /* Shape */
   --radius-sm: 12px;
@@ -69,11 +78,14 @@
   --radius-lg: 32px;
   --radius-xl: 48px;
   --radius-arch: 999px 999px var(--radius) var(--radius);
-  /* Scalloped band edges (see .scallop-* in global.css) */
-  --scallop-width: 56px;
-  --scallop-height: 18px;
 
-  /* Shadows: soft and purple-tinted */
+  /* Pinata fringe divider (see .fringe in global.css) */
+  --fringe-height: 28px;
+  --fringe-tooth: 12px;
+  /* Hand-drawn wave: a mask shape for .squiggle and the menu links */
+  --squiggle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 8'%3E%3Cpath d='M0 4Q6 0 12 4T24 4' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+
+  /* Shadows: soft and ink-tinted */
   --shadow-sm: 0 4px 14px rgb(43 37 64 / 0.08);
   --shadow: 0 10px 30px rgb(43 37 64 / 0.1);
   --shadow-lg: 0 18px 44px rgb(43 37 64 / 0.16);
@@ -81,6 +93,8 @@
   /* Motion */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --duration-hover: 0.25s;
+  --duration-enter: 0.6s;
+  --duration-confetti: 0.9s;
   --duration-reveal: 0.8s;
   --duration-zoom: 1.4s;
   /* Springy overshoot for hover "inflate" effects */
@@ -89,7 +103,8 @@
 
   /* Layers */
   --z-header: 100;
-  --z-floating: 200;
+  --z-menu: 150;
+  --z-floating: 120; /* above the header, below the full-screen menu */
   --z-sheet: 300;
   --z-toast: 400;
 }
@@ -103,6 +118,12 @@
 @media (min-width: 860px) {
   :root {
     --section-pad: var(--space-9);
-    --header-height: 4.5rem;
+    --header-height: 4.75rem;
+  }
+}
+
+@media (min-width: 1180px) {
+  :root {
+    --section-pad: 7rem;
   }
 }

@@ -1,8 +1,10 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CategoryChips from '../../components/CategoryChips.astro';
 import ChannelLinks from '../../components/ChannelLinks.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
+import SortSelect from '../../components/SortSelect.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProductsInCategory, getVisibleCategories, type Category } from '../../lib/content';
 import { breadcrumbJsonLd, describe } from '../../lib/seo';
@@ -27,23 +29,26 @@ const metaDescription = describe(
   description,
   `${name} from Balloonistry: custom balloon gifts in Kitchener-Waterloo, made to order in your colours.`,
 );
-const jsonLd = [
-  breadcrumbJsonLd([
-    { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/shop/' },
-    { name, path: `/shop/${category.id}/` },
-  ]),
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Shop', path: '/shop/' },
+  { name, path: `/shop/${category.id}/` },
 ];
+const jsonLd = [breadcrumbJsonLd(crumbs)];
 ---
 
 <BaseLayout title={name} description={metaDescription} pageType="category" jsonLd={jsonLd}>
   <section class="container shop">
+    <Breadcrumbs crumbs={crumbs} />
     <header class="shop__header">
       <p class="eyebrow">Shop</p>
       <h1>{name}</h1>
       {description && <p>{description}</p>}
     </header>
-    <CategoryChips active={category.id} location="category" />
+    <div class="shop__toolbar">
+      <CategoryChips active={category.id} location="category" />
+      {products.length > 1 && <SortSelect location="category" />}
+    </div>
     {products.length > 0 ? (
       <ProductGrid products={products} list="category" heading="h2" />
     ) : (
@@ -69,6 +74,20 @@ const jsonLd = [
     margin-bottom: 0;
   }
 
+  .shop__toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 860px) {
+    .shop__toolbar {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: var(--space-5);
+    }
+  }
+
   .shop__empty {
     padding: var(--space-6) var(--space-5);
     border-radius: var(--radius);
@@ -85,5 +104,14 @@ const jsonLd = [
 
   .shop__empty > :last-child {
     margin-bottom: 0;
+  }
+</style>
+
+<style is:global>
+  /* Phones: the breadcrumbs sit close under the header */
+  @media (max-width: 599px) {
+    main.page-top {
+      padding-top: calc(var(--header-height) + var(--space-2));
+    }
   }
 </style>

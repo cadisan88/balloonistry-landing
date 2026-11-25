@@ -60,7 +60,7 @@ export const site = {
   },
 
   /**
-   * Base links for each ordering channel, in priority order (after the form).
+   * Base links for each ordering channel, in display order (the form comes after these).
    * src/lib/channels.ts adds the pre-filled message to WhatsApp and SMS.
    */
   channels: {
@@ -68,25 +68,22 @@ export const site = {
     sms: `sms:${phoneE164}`,
     phone: `tel:${phoneE164}`,
     instagram: `https://ig.me/m/${instagramUser}`,
-    messenger: `https://m.me/${facebookPageId}`,
   },
 
   nav: [
-    { label: 'Home', href: '/' },
     { label: 'Shop', href: '/shop/' },
-    { label: 'Contact Us', href: '/contact/' },
-    {
-      label: 'More',
-      id: 'more',
-      children: [
-        { label: 'FAQ', href: '/faq/' },
-        { label: 'About Us', href: '/about/' },
-      ],
-    },
+    { label: 'Events', href: '/events/' },
+    { label: 'Corporate', href: '/corporate/' },
+    { label: 'FAQ', href: '/faq/' },
+    { label: 'About', href: '/about/' },
+    { label: 'Contact', href: '/contact/' },
   ] satisfies NavItem[] as NavItem[],
 
   footer: {
-    explore: [{ label: 'Event decor', href: '/events/' }] satisfies NavLink[] as NavLink[],
+    explore: [
+      { label: 'Event decor', href: '/events/' },
+      { label: 'Corporate events', href: '/corporate/' },
+    ] satisfies NavLink[] as NavLink[],
     policies: [
       { label: 'Shipping & Pickup Policy', href: '/policies/shipping-pickup/' },
       { label: 'Refund & Cancellation Policy', href: '/policies/refund-cancellation/' },

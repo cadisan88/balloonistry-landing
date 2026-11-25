@@ -2,28 +2,34 @@
 /** Status messages, for example "Message copied". Filled by src/scripts/toast.ts. */
 ---
 
-<div class="toast" role="status" aria-live="polite" data-toast></div>
+<div class="toast" role="status" aria-live="polite" popover="manual" data-toast></div>
 
 <style>
   .toast {
     position: fixed;
-    left: 50%;
-    bottom: var(--space-5);
+    inset: auto auto var(--space-5) 50%;
     z-index: var(--z-toast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: max-content;
     max-width: calc(100% - 2 * var(--gutter));
+    margin: 0;
     padding: var(--space-3) var(--space-5);
+    border: 0;
     border-radius: var(--radius-pill);
     background: var(--color-ink);
     color: var(--color-white);
     font-weight: 700;
-    text-align: center;
     box-shadow: var(--shadow-lg);
     opacity: 0;
+    visibility: hidden;
     transform: translate(-50%, 1rem);
     pointer-events: none;
     transition:
       opacity var(--duration-hover) var(--ease),
-      transform var(--duration-hover) var(--ease);
+      transform var(--duration-hover) var(--ease),
+      visibility 0s linear var(--duration-hover);
   }
 
   .toast:empty {
@@ -32,6 +38,34 @@
 
   .toast:global(.is-visible) {
     opacity: 1;
+    visibility: visible;
     transform: translate(-50%, 0);
+    transition-delay: 0s;
+  }
+
+  /* Only a toast with a button takes clicks. Others never block the page. */
+  .toast:global(.has-action.is-visible) {
+    pointer-events: auto;
+  }
+
+  .toast :global(.toast__action) {
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    border: 2px solid var(--color-white);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-white);
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .toast :global(.toast__action:hover) {
+    background: var(--color-white);
+    color: var(--color-ink);
+  }
+
+  .toast :global(.toast__action:focus-visible) {
+    outline-color: var(--color-white);
   }
 </style>

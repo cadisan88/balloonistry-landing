@@ -1,9 +1,12 @@
 ---
 import { Picture } from 'astro:assets';
 import ChannelLinks from '../components/ChannelLinks.astro';
+import Confetti from '../components/Confetti.astro';
 import ContactForm from '../components/ContactForm.astro';
 import EventGallery from '../components/EventGallery.astro';
 import EventServices from '../components/EventServices.astro';
+import Fringe from '../components/Fringe.astro';
+import HowItWorks from '../components/HowItWorks.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { eventGallery } from '../config/events';
@@ -12,9 +15,9 @@ import { site } from '../config/site';
 const QUOTE_ID = 'quote';
 const heroPhoto = eventGallery[0];
 const steps = [
-  'Tell us about your event.',
-  'We send a design and quote.',
-  'We deliver and install.',
+  { title: 'Tell us about your event' },
+  { title: 'We send a design and quote' },
+  { title: 'We deliver and install' },
 ];
 ---
 
@@ -22,42 +25,53 @@ const steps = [
   title="Event Decor"
   description={`Event balloon design and installation by ${site.name}: arches, garlands, columns and outdoor decor in Kitchener-Waterloo.`}
   pageType="events"
+  hero
   formHref={`#${QUOTE_ID}`}
 >
-  <section class="container events-hero" aria-labelledby="events-title">
-    <div class="events-hero__text">
-      <p class="eyebrow">Event decor</p>
-      <h1 id="events-title">Event balloon design and installation</h1>
-      <p>
-        We design balloon decor for your celebration and install it at your venue. Tell us your
-        date, colours and theme, and we will send you a design and a quote.
-      </p>
-      <a
-        class="btn btn-primary"
-        href={`#${QUOTE_ID}`}
-        data-form-link
-        data-quote-cta
-        data-location="events"
-      >
-        Request a quote
-      </a>
-    </div>
-    {heroPhoto && (
-      <div class="events-hero__media zoom-out">
-        <Picture
-          src={heroPhoto.image}
-          alt={heroPhoto.alt}
-          formats={['avif', 'webp']}
-          widths={[480, 800, 1200]}
-          sizes="(min-width: 1180px) 560px, (min-width: 860px) 48vw, 92vw"
-          loading="eager"
-          fetchpriority="high"
-        />
+  <section class="band band--cream events-hero" aria-labelledby="events-title">
+    <div class="container events-hero__grid">
+      <div class="events-hero__text">
+        <p class="eyebrow enter">Event decor</p>
+        <h1 id="events-title" class="enter enter-d1">
+          Event balloon design and installation
+        </h1>
+        <p class="lead enter enter-d2">
+          We design balloon decor for your celebration and install it at your venue. Tell us your
+          date, colours and theme, and we will send you a design and a quote.
+        </p>
+        <div class="btn-row enter enter-d3">
+          <a
+            class="btn btn-primary"
+            href={`#${QUOTE_ID}`}
+            data-form-link
+            data-quote-cta
+            data-location="events"
+          >
+            Request a quote
+          </a>
+        </div>
       </div>
-    )}
+      {heroPhoto && (
+        <div class="events-hero__frame">
+          <Confetti variant="frame" />
+          <div class="events-hero__media enter-scale enter-d2">
+            <Picture
+              src={heroPhoto.image}
+              alt={heroPhoto.alt}
+              formats={['avif', 'webp']}
+              widths={[480, 800, 1200]}
+              sizes="(min-width: 1180px) 460px, (min-width: 860px) 40vw, 80vw"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </div>
+        </div>
+      )}
+    </div>
   </section>
+  <Fringe />
 
-  <section class="section events-services" aria-labelledby="services-title">
+  <section class="section band band--turquoise-soft" aria-labelledby="services-title">
     <div class="container">
       <SectionHeader
         eyebrow="Services"
@@ -69,30 +83,23 @@ const steps = [
     </div>
   </section>
 
-  <section class="section" aria-labelledby="steps-title">
+  <section class="section band band--white" aria-labelledby="steps-title">
     <div class="container">
       <SectionHeader eyebrow="How it works" title="Three simple steps" id="steps-title" />
-      <ol class="steps reveal">
-        {steps.map((step, index) => (
-          <li>
-            <span class="steps__number" aria-hidden="true">
-              {index + 1}
-            </span>
-            {step}
-          </li>
-        ))}
-      </ol>
+      <HowItWorks steps={steps} />
     </div>
   </section>
 
-  <section class="section events-quote" id={QUOTE_ID} aria-labelledby="quote-title">
-    <div class="container events-quote__inner">
+  <section class="section band band--lavender-soft" id={QUOTE_ID} aria-labelledby="quote-title">
+    <div class="container container--narrow">
       <SectionHeader eyebrow="Get a quote" title="Request a quote" id="quote-title">
         <p>
           Tell us about your event. The date, type and city help us plan, but they are optional.
         </p>
       </SectionHeader>
-      <ContactForm type="event_quote" idPrefix="quote" location="events" />
+      <div class="events-quote__panel">
+        <ContactForm type="event_quote" idPrefix="quote" location="events" />
+      </div>
 
       <div class="events-quote__channels">
         <h3>Prefer to chat?</h3>
@@ -104,26 +111,54 @@ const steps = [
 
 <style>
   .events-hero {
+    overflow-x: clip;
+    padding-block: var(--space-7) calc(var(--section-pad) + var(--fringe-tooth));
+  }
+
+  .events-hero__grid {
     display: grid;
-    gap: var(--space-7);
+    gap: var(--space-8);
     align-items: center;
-    padding-bottom: var(--section-pad);
   }
 
   @media (min-width: 860px) {
-    .events-hero {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: var(--space-8);
+    .events-hero__grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: var(--space-7);
     }
   }
 
-  .events-hero__text p:last-of-type {
+  .events-hero__text h1 {
+    max-width: 12ch;
+    margin-bottom: var(--space-5);
+  }
+
+  .events-hero__text .lead {
+    max-width: 46ch;
     margin-bottom: var(--space-6);
   }
 
+  .events-hero__frame {
+    position: relative;
+    width: min(100%, 28rem);
+    margin-inline: auto;
+  }
+
+  .events-hero__frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    background: var(--color-lavender);
+    transform: translate(var(--space-4), var(--space-4)) rotate(2deg);
+  }
+
   .events-hero__media {
-    aspect-ratio: 3 / 2;
-    border-radius: var(--radius);
+    position: relative;
+    z-index: 1;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
     background: var(--color-lavender-soft);
     box-shadow: var(--shadow-lg);
   }
@@ -134,55 +169,17 @@ const steps = [
     object-fit: cover;
   }
 
-  .events-services {
-    background: var(--color-turquoise-soft);
-  }
-
-  .steps {
-    display: grid;
-    gap: var(--space-4);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: none;
-  }
-
-  @media (min-width: 860px) {
-    .steps {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--space-5);
-    }
-  }
-
-  .steps li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
+  .events-quote__panel {
     padding: var(--space-5);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--color-white);
     box-shadow: var(--shadow-sm);
-    font-weight: 700;
   }
 
-  .steps__number {
-    display: inline-grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius-pill);
-    background: var(--color-orange);
-    font-family: var(--font-display);
-    font-size: 1.375rem;
-  }
-
-  .events-quote {
-    background: var(--color-turquoise-soft);
-  }
-
-  .events-quote__inner {
-    max-width: 52rem;
+  @media (min-width: 600px) {
+    .events-quote__panel {
+      padding: var(--space-6);
+    }
   }
 
   .events-quote__channels {

@@ -23,8 +23,8 @@ const updatedText = new Intl.DateTimeFormat(site.locale, {
 ---
 
 <BaseLayout title={title} description={`${title} for ${site.name}.`} pageType="policy">
-  <article class="container text-page">
-    <header class="text-page__header">
+  <article class="container container--narrow text-page">
+    <header class="page-head">
       <p class="eyebrow">Policies</p>
       <h1>{title}</h1>
       <p class="small">
@@ -36,13 +36,3 @@ const updatedText = new Intl.DateTimeFormat(site.locale, {
     </div>
   </article>
 </BaseLayout>
-
-<style>
-  .text-page {
-    padding-bottom: var(--section-pad);
-  }
-
-  .text-page__header {
-    margin-bottom: var(--space-6);
-  }
-</style>

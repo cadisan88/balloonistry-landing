@@ -1,26 +1,42 @@
 ---
+import Confetti from '../components/Confetti.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="Page not found" pageType="not_found" index={false}>
-  <section class="container section not-found">
-    <p class="eyebrow">Error 404</p>
-    <h1>This page floated away</h1>
-    <p>We could not find the page you were looking for. It may have moved, or the link is old.</p>
-    <div class="btn-row">
-      <a class="btn btn-primary" href="/shop/">
-        Shop balloons
-      </a>
-      <a class="btn btn-ghost" href="/">
-        Go to the home page
-      </a>
+  <section class="section not-found">
+    <Confetti variant="field" />
+    <div class="container not-found__inner">
+      <p class="eyebrow">Error 404</p>
+      <h1>This page floated away</h1>
+      <p class="lead">
+        We could not find the page you were looking for. It may have moved, or the link is old.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="/shop/">
+          Shop balloons
+        </a>
+        <a class="btn btn-secondary" href="/">
+          Go to the home page
+        </a>
+      </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
   .not-found {
-    padding-top: var(--space-6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .not-found__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .not-found h1 {
+    max-width: 12ch;
   }
 
   .not-found .btn-row {

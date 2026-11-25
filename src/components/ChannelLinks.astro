@@ -1,10 +1,11 @@
 ---
 /**
- * The ordering channels in the order of docs/SPEC.md R7:
- * 1. the form (primary), 2. WhatsApp (secondary), 3. a small row: SMS, call, Instagram, Messenger.
- * Instagram and Messenger cannot be pre-filled: a click copies the message (src/scripts/channels.ts).
+ * The ordering channels in the order of docs/REDESIGN.md section 4:
+ * WhatsApp (primary), Instagram, Text us, Call, then the form and a plain email link.
+ * Instagram cannot be pre-filled: a click copies the message (src/scripts/channels.ts).
  */
 import Icon from './Icon.astro';
+import { site } from '../config/site';
 import { buildMessage, channelLinks, type ChannelLocation, type ProductRef } from '../lib/channels';
 
 interface Props {
@@ -23,10 +24,68 @@ const isOrder = intent === 'order';
 ---
 
 <div class="channels" data-channels>
-  <div class="channels__main">
+  <ul class="channels__list">
+    <li>
+      <a
+        class="btn btn-channel btn-channel--whatsapp btn-channel--primary"
+        href={links.whatsapp}
+        target="_blank"
+        rel="noopener"
+        data-channel="whatsapp"
+        data-channel-location={location}
+        data-product={product?.id}
+      >
+        <Icon name="whatsapp" size={24} />
+        WhatsApp
+        <span class="visually-hidden">(opens in a new tab)</span>
+      </a>
+    </li>
+    <li>
+      <a
+        class="btn btn-channel btn-channel--instagram"
+        href={links.instagram}
+        target="_blank"
+        rel="noopener"
+        data-channel="instagram"
+        data-channel-location={location}
+        data-product={product?.id}
+        data-copy-message={message}
+      >
+        <Icon name="instagram" size={24} />
+        Instagram
+        <span class="visually-hidden">(opens in a new tab)</span>
+      </a>
+    </li>
+    <li>
+      <a
+        class="btn btn-channel btn-channel--sms"
+        href={links.sms}
+        data-channel="sms"
+        data-channel-location={location}
+        data-product={product?.id}
+      >
+        <Icon name="message-square-text" size={24} />
+        Text us
+      </a>
+    </li>
+    <li>
+      <a
+        class="btn btn-channel btn-channel--phone"
+        href={links.phone}
+        data-channel="phone"
+        data-channel-location={location}
+        data-product={product?.id}
+      >
+        <Icon name="phone" size={24} />
+        Call
+      </a>
+    </li>
+  </ul>
+
+  <div class="channels__more">
     {formHref && (
       <a
-        class="btn btn-primary"
+        class="btn btn-secondary"
         href={formHref}
         data-channel="form"
         data-channel-location={location}
@@ -37,79 +96,10 @@ const isOrder = intent === 'order';
         {isOrder ? 'Order with the form' : 'Send us a message'}
       </a>
     )}
-    <a
-      class="btn btn-secondary"
-      href={links.whatsapp}
-      target="_blank"
-      rel="noopener"
-      data-channel="whatsapp"
-      data-channel-location={location}
-      data-product={product?.id}
-    >
-      <Icon name="whatsapp" />
-      {isOrder ? 'Order on WhatsApp' : 'Message us on WhatsApp'}
-      <span class="visually-hidden">(opens WhatsApp)</span>
+    <a class="channels__email link-draw" href={`mailto:${site.email}`}>
+      Email us
     </a>
   </div>
-
-  <ul class="channels__row">
-    <li>
-      <a
-        class="chip"
-        href={links.sms}
-        data-channel="sms"
-        data-channel-location={location}
-        data-product={product?.id}
-      >
-        <Icon name="message-square-text" size={18} />
-        Text us
-      </a>
-    </li>
-    <li>
-      <a
-        class="chip"
-        href={links.phone}
-        data-channel="phone"
-        data-channel-location={location}
-        data-product={product?.id}
-      >
-        <Icon name="phone" size={18} />
-        Call
-      </a>
-    </li>
-    <li>
-      <a
-        class="chip"
-        href={links.instagram}
-        target="_blank"
-        rel="noopener"
-        data-channel="instagram"
-        data-channel-location={location}
-        data-product={product?.id}
-        data-copy-message={message}
-      >
-        <Icon name="instagram" size={18} />
-        Instagram
-        <span class="visually-hidden">(opens in a new tab)</span>
-      </a>
-    </li>
-    <li>
-      <a
-        class="chip"
-        href={links.messenger}
-        target="_blank"
-        rel="noopener"
-        data-channel="messenger"
-        data-channel-location={location}
-        data-product={product?.id}
-        data-copy-message={message}
-      >
-        <Icon name="messenger" size={18} />
-        Messenger
-        <span class="visually-hidden">(opens in a new tab)</span>
-      </a>
-    </li>
-  </ul>
 </div>
 
 <style>
@@ -118,23 +108,31 @@ const isOrder = intent === 'order';
     gap: var(--space-4);
   }
 
-  .channels__main {
+  .channels__list {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
     gap: var(--space-3);
-  }
-
-  @media (min-width: 600px) {
-    .channels__main {
-      grid-template-columns: repeat(auto-fit, minmax(14rem, max-content));
-    }
-  }
-
-  .channels__row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  .channels__list .btn {
+    width: 100%;
+  }
+
+  .channels__more {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .channels__email {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-crimson-deep);
+    font-weight: 700;
   }
 </style>

@@ -2,15 +2,19 @@
 import type { GetStaticPaths } from 'astro';
 import { getImage } from 'astro:assets';
 import { render } from 'astro:content';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ChannelLinks from '../../components/ChannelLinks.astro';
 import ContactForm from '../../components/ContactForm.astro';
-import OrderPanel from '../../components/OrderPanel.astro';
-import ProductGallery from '../../components/ProductGallery.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import ProductBuy from '../../components/ProductBuy.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
+import ProductMedia from '../../components/ProductMedia.astro';
 import ProductTags from '../../components/ProductTags.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
   getAvailableProducts,
   getCategoriesOf,
+  getProductInfo,
   getRelatedProducts,
   type Product,
 } from '../../lib/content';
@@ -32,10 +36,13 @@ interface Props {
 }
 
 const { product } = Astro.props;
-const { name, price, tags, images, imageAlt } = product.data;
+const { name, price, tags, images, imageAlt, videos, options, features } = product.data;
 const { Content } = await render(product);
-const categories = await getCategoriesOf(product);
-const related = await getRelatedProducts(product);
+const [categories, related, info] = await Promise.all([
+  getCategoriesOf(product),
+  getRelatedProducts(product),
+  getProductInfo(),
+]);
 const productRef = { id: product.id, name };
 const ORDER_FORM_ID = 'order-form';
 
@@ -54,7 +61,19 @@ const description = describe(
 const shareImage = mainImage
   ? await getImage({ src: mainImage, width: 1200, height: 1200, format: 'jpg', fit: 'cover' })
   : undefined;
+// A small image for the quote list
+const thumb = mainImage
+  ? await getImage({ src: mainImage, width: 160, height: 160, format: 'webp', fit: 'cover' })
+  : undefined;
+
+// The same crumbs for the visible breadcrumbs and the JSON-LD
 const [firstCategory] = categories;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Shop', path: '/shop/' },
+  ...(firstCategory ? [{ name: firstCategory.data.name, path: `/shop/${firstCategory.id}/` }] : []),
+  { name, path: `/products/${product.id}/` },
+];
 const jsonLd = [
   productJsonLd({
     id: product.id,
@@ -63,14 +82,7 @@ const jsonLd = [
     imageUrl: shareImage ? absoluteUrl(shareImage.src) : '',
     price,
   }),
-  breadcrumbJsonLd([
-    { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/shop/' },
-    ...(firstCategory
-      ? [{ name: firstCategory.data.name, path: `/shop/${firstCategory.id}/` }]
-      : []),
-    { name, path: `/products/${product.id}/` },
-  ]),
+  breadcrumbJsonLd(crumbs),
 ];
 ---
 
@@ -85,6 +97,10 @@ const jsonLd = [
   product={productRef}
   formHref={`#${ORDER_FORM_ID}`}
 >
+  <div class="container product-crumbs">
+    <Breadcrumbs crumbs={crumbs} />
+  </div>
+
   <article
     class="container product"
     data-product-page
@@ -92,43 +108,74 @@ const jsonLd = [
     data-price={price}
     data-categories={categories.map((category) => category.id).join(',')}
   >
-    <ProductGallery images={images} alt={imageAlt ?? name} />
+    <ProductMedia productId={product.id} alt={imageAlt ?? name} images={images} videos={videos} />
 
     <div class="product__info">
-      <ProductTags tags={tags} />
+      <ProductTags tags={tags} addons={options.length > 0} />
       <h1 class="product__name">{name}</h1>
-      <p class="product__price">{formatPrice(price)}</p>
-
-      <div class="product__description">
-        <Content />
-      </div>
-
-      <OrderPanel product={productRef} formId={ORDER_FORM_ID} />
-
-      <p class="product__note">
-        Every design can be customized. Tell us your colours, theme and date.
-      </p>
-
-      {categories.length > 0 && (
-        <div class="product__categories">
-          <h2 class="small">Categories</h2>
-          <ul>
-            {categories.map((category) => (
-              <li>
-                <a class="chip" href={`/shop/${category.id}/`}>
-                  {category.data.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ProductBuy product={product} image={thumb?.src}>
+        {firstParagraph && <p class="product__intro">{firstParagraph}</p>}
+      </ProductBuy>
     </div>
   </article>
 
+  <div class="container product-details">
+    <section aria-labelledby="description-title">
+      <h2 id="description-title">Description</h2>
+      <div class="prose">
+        <Content />
+      </div>
+    </section>
+
+    {features.length > 0 && (
+      <section aria-labelledby="features-title">
+        <h2 id="features-title">Features</h2>
+        <ul class="product-details__list">
+          {features.map((feature) => (
+            <li>{feature}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section aria-labelledby="shipping-title">
+      <h2 id="shipping-title">Shipping &amp; delivery</h2>
+      <p>{info.shipping}</p>
+      <a class="link-draw" href="/policies/shipping-pickup/">
+        Read the shipping and pickup policy
+      </a>
+    </section>
+
+    <section aria-labelledby="returns-title">
+      <h2 id="returns-title">Returns &amp; refunds</h2>
+      <p>{info.returns}</p>
+      <a class="link-draw" href="/policies/refund-cancellation/">
+        Read the refund and cancellation policy
+      </a>
+    </section>
+
+    {categories.length > 0 && (
+      <section aria-labelledby="categories-title">
+        <h2 id="categories-title">Categories</h2>
+        <ul class="product-details__chips">
+          {categories.map((category) => (
+            <li>
+              <a class="chip" href={`/shop/${category.id}/`}>
+                {category.data.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </div>
+
   <section class="container order-form" id={ORDER_FORM_ID} aria-labelledby="order-form-title">
-    <h2 id="order-form-title">Order with the form</h2>
-    <p>Your message is ready below. Add your date, colours and theme, and we will reply soon.</p>
+    <h2 id="order-form-title">Prefer to order another way?</h2>
+    <p>Chat with us, or send your request with the form. Your message is ready below.</p>
+    <div class="order-form__channels">
+      <ChannelLinks location="product_panel" product={productRef} />
+    </div>
     <ContactForm
       type="order"
       idPrefix="order"
@@ -144,9 +191,15 @@ const jsonLd = [
       <ProductGrid products={related} list="related" />
     </section>
   )}
+
+  <Lightbox />
 </BaseLayout>
 
 <style>
+  .product-crumbs {
+    padding-bottom: var(--space-2);
+  }
+
   .product {
     display: grid;
     gap: var(--space-6);
@@ -164,6 +217,7 @@ const jsonLd = [
   .product__info {
     display: grid;
     gap: var(--space-4);
+    min-width: 0;
   }
 
   .product__info > :global(*) {
@@ -174,29 +228,49 @@ const jsonLd = [
     font-size: var(--text-h2);
   }
 
-  .product__price {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--color-crimson-deep);
+  .product__intro {
+    font-size: var(--text-lead);
   }
 
-  .product__description > :global(:last-child) {
-    margin-bottom: 0;
+  /* ----- Description, features, shipping, returns ----- */
+
+  .product-details {
+    display: grid;
+    gap: var(--space-7);
+    padding-bottom: var(--space-7);
   }
 
-  .product__note {
-    padding: var(--space-4);
-    border-radius: var(--radius-sm);
-    background: var(--color-lavender-soft);
+  .product-details > section {
+    max-width: var(--content-narrow);
   }
 
-  .product__categories h2 {
-    margin-bottom: var(--space-2);
-    font-family: var(--font-body);
+  .product-details h2 {
+    font-size: var(--text-h3);
+    font-style: normal;
+    letter-spacing: 0;
   }
 
-  .product__categories ul {
+  .product-details p {
+    max-width: var(--measure);
+  }
+
+  .product-details a.link-draw {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 700;
+  }
+
+  .product-details__list {
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  .product-details__list li + li {
+    margin-top: var(--space-2);
+  }
+
+  .product-details__chips {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
@@ -205,12 +279,27 @@ const jsonLd = [
     list-style: none;
   }
 
+  /* ----- Order form (secondary path) ----- */
+
   .order-form {
     max-width: 52rem;
     padding-bottom: var(--space-7);
   }
 
+  .order-form__channels {
+    margin-bottom: var(--space-6);
+  }
+
   .related {
     padding-top: var(--space-7);
+  }
+</style>
+
+<style is:global>
+  /* Phones: the breadcrumbs sit close under the header */
+  @media (max-width: 599px) {
+    main.page-top {
+      padding-top: calc(var(--header-height) + var(--space-2));
+    }
   }
 </style>

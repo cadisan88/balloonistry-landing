@@ -1,7 +1,8 @@
 ---
 /**
- * The contact form next to the other channels.
+ * The ordering channels next to the contact form.
  * Used by the home page ("Connect with us") and the Contact page.
+ * Channels come first (WhatsApp, Instagram, Text us, Call), the form is the secondary path.
  */
 import ChannelLinks from './ChannelLinks.astro';
 import ContactDetails from './ContactDetails.astro';
@@ -20,10 +21,9 @@ const { idPrefix, details = false, headingLevel: Heading = 'h3' } = Astro.props;
 ---
 
 <div class="connect">
-  <ContactForm type="contact" idPrefix={idPrefix} />
   <aside class="connect__channels" aria-labelledby={`${idPrefix}-channels-title`}>
     <Heading class="connect__title" id={`${idPrefix}-channels-title`}>
-      Prefer to chat?
+      Chat with us
     </Heading>
     <p>Message, text or call us. We are happy to help you plan your balloons.</p>
     <ChannelLinks location="contact_section" intent="contact" />
@@ -34,11 +34,18 @@ const { idPrefix, details = false, headingLevel: Heading = 'h3' } = Astro.props;
       </div>
     )}
   </aside>
+  <div class="connect__form">
+    <Heading class="connect__title">Or send a message</Heading>
+    <ContactForm type="contact" idPrefix={idPrefix} />
+  </div>
 </div>
 
 <style>
   .connect__title {
+    font-family: var(--font-display);
     font-size: var(--text-h3);
+    font-style: normal;
+    letter-spacing: 0;
   }
 
   .connect {
@@ -49,8 +56,21 @@ const { idPrefix, details = false, headingLevel: Heading = 'h3' } = Astro.props;
 
   @media (min-width: 860px) {
     .connect {
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
       gap: var(--space-8);
+    }
+  }
+
+  .connect__form {
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 600px) {
+    .connect__form {
+      padding: var(--space-6);
     }
   }
 

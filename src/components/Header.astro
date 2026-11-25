@@ -1,13 +1,52 @@
 ---
 import { Picture } from 'astro:assets';
-import Icon from './Icon.astro';
-import { isNavGroup, site } from '../config/site';
+import Confetti from './Confetti.astro';
+import Icon, { type IconName } from './Icon.astro';
+import { isNavGroup, site, type NavLink } from '../config/site';
 import logo from '../assets/brand/logo-header.png';
 
 /** "/shop" and "/shop/" are the same page. */
 const normalize = (path: string) => (path.endsWith('/') ? path : `${path}/`);
 const current = normalize(Astro.url.pathname);
-const isCurrent = (href: string) => normalize(href) === current;
+// Match the section too: /shop/balloons/ keeps "Shop" marked
+const isCurrent = (href: string) =>
+  href === '/' ? current === '/' : current.startsWith(normalize(href));
+
+// The nav is a flat list. An old grouped item is flattened, and Home is the logo.
+const links: NavLink[] = site.nav
+  .flatMap((item) => (isNavGroup(item) ? item.children : [item]))
+  .filter((link) => link.href !== '/');
+
+const channels: {
+  key: string;
+  label: string;
+  href: string;
+  icon: IconName;
+  external: boolean;
+}[] = [
+  {
+    key: 'whatsapp',
+    label: 'WhatsApp',
+    href: site.channels.whatsapp,
+    icon: 'whatsapp',
+    external: true,
+  },
+  {
+    key: 'instagram',
+    label: 'Instagram',
+    href: site.channels.instagram,
+    icon: 'instagram',
+    external: true,
+  },
+  {
+    key: 'sms',
+    label: 'Text us',
+    href: site.channels.sms,
+    icon: 'message-square-text',
+    external: false,
+  },
+  { key: 'phone', label: 'Call', href: site.channels.phone, icon: 'phone', external: false },
+];
 ---
 
 <header class="site-header" data-site-header>
@@ -25,61 +64,126 @@ const isCurrent = (href: string) => normalize(href) === current;
       />
     </a>
 
-    <button
-      class="site-header__toggle"
-      type="button"
-      aria-expanded="false"
-      aria-controls="site-nav"
-      data-nav-toggle
-    >
-      <span class="visually-hidden">Menu</span>
-      <Icon name="menu" size={26} class="site-header__toggle-open" />
-      <Icon name="x" size={26} class="site-header__toggle-close" />
-    </button>
-
-    <nav id="site-nav" class="site-nav" aria-label="Main" data-nav>
+    <nav class="site-nav" aria-label="Main">
       <ul class="site-nav__list">
-        {site.nav.map((item) =>
-          isNavGroup(item) ? (
-            <li class="site-nav__item site-nav__item--group" data-nav-group>
-              <button
-                class="site-nav__link site-nav__group-button"
-                type="button"
-                aria-expanded="false"
-                aria-controls={`site-nav-${item.id}`}
-                data-nav-group-button
-              >
-                {item.label}
-                <Icon name="chevron-down" size={18} class="site-nav__chevron" />
-              </button>
-              <ul id={`site-nav-${item.id}`} class="site-nav__submenu">
-                {item.children.map((child) => (
-                  <li>
-                    <a
-                      class="site-nav__link site-nav__sublink"
-                      href={child.href}
-                      aria-current={isCurrent(child.href) ? 'page' : undefined}
-                    >
-                      {child.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ) : (
-            <li class="site-nav__item">
-              <a
-                class="site-nav__link"
-                href={item.href}
-                aria-current={isCurrent(item.href) ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          ),
-        )}
+        {links.map((link) => (
+          <li>
+            <a
+              class="site-nav__link"
+              href={link.href}
+              aria-current={isCurrent(link.href) ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
       </ul>
     </nav>
+
+    <div class="site-header__actions">
+      <button
+        class="quote-btn"
+        type="button"
+        data-quote-open
+        data-items="0"
+        aria-label="Quote list, 0 items"
+      >
+        <Icon name="clipboard-list" size={22} />
+        <span class="quote-btn__label">Quote list</span>
+        <span class="quote-btn__count" data-quote-count="0">
+          0
+        </span>
+      </button>
+
+      <button
+        class="site-header__toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-menu"
+        data-menu-toggle
+      >
+        <span class="visually-hidden">Menu</span>
+        <Icon name="menu" size={26} />
+      </button>
+    </div>
+  </div>
+
+  <!-- Full-screen menu. Closed state: inert and invisible. -->
+  <div
+    id="site-menu"
+    class="site-menu"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Site menu"
+    data-menu
+    inert
+  >
+    <Confetti variant="field" />
+    <div class="container site-menu__bar">
+      <a
+        class="site-header__brand"
+        href="/"
+        aria-label={`${site.name} home`}
+        data-menu-close-on-click
+      >
+        <Picture
+          src={logo}
+          alt=""
+          height={60}
+          densities={[1, 2, 3]}
+          formats={['avif', 'webp']}
+          loading="lazy"
+        />
+      </a>
+      <button class="site-menu__close" type="button" data-menu-close>
+        <span class="visually-hidden">Close menu</span>
+        <Icon name="x" size={26} />
+      </button>
+    </div>
+
+    <div class="container site-menu__body">
+      <nav aria-label="Main menu">
+        <ul class="site-menu__list">
+          {links.map((link) => (
+            <li>
+              <a
+                class="site-menu__link"
+                href={link.href}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
+                data-menu-close-on-click
+              >
+                <span class="site-menu__text">{link.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="site-menu__foot">
+        <p class="eyebrow">Order or ask us anything</p>
+        <ul class="site-menu__channels">
+          {channels.map((channel) => (
+            <li>
+              <a
+                class:list={[
+                  'btn',
+                  'btn-channel',
+                  `btn-channel--${channel.key}`,
+                  { 'btn-channel--primary': channel.key === 'whatsapp' },
+                ]}
+                href={channel.href}
+                target={channel.external ? '_blank' : undefined}
+                rel={channel.external ? 'noopener' : undefined}
+              >
+                <Icon name={channel.icon} size={24} />
+                {channel.label}
+                {channel.external && <span class="visually-hidden">(opens in a new tab)</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -94,110 +198,152 @@ const isCurrent = (href: string) => normalize(href) === current;
     position: fixed;
     inset: 0 0 auto;
     z-index: var(--z-header);
-    background: transparent;
-    transition:
-      background-color var(--duration-hover) var(--ease),
-      box-shadow var(--duration-hover) var(--ease);
-  }
-
-  /* Solid after 20px of scroll, and while the mobile menu is open */
-  .site-header.is-scrolled,
-  .site-header.is-open {
+    border-bottom: 1px solid var(--color-hairline);
     background: var(--color-header-solid);
-    box-shadow: var(--shadow-sm);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    transition: box-shadow var(--duration-hover) var(--ease);
   }
 
-  /* The open mobile menu must fully cover the page behind it */
-  .site-header.is-open {
-    background: var(--color-white);
+  .site-header.is-scrolled {
+    box-shadow: var(--shadow-sm);
   }
 
   .site-header__bar {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-4);
     min-height: var(--header-height);
   }
 
   .site-header__brand {
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0;
     padding-block: var(--space-1);
     border-radius: var(--radius-sm);
   }
 
   .site-header__brand :global(img) {
     width: auto;
-    height: 52px;
+    height: 48px;
   }
 
   @media (min-width: 860px) {
     .site-header__brand :global(img) {
-      height: 60px;
+      height: 56px;
     }
   }
 
-  .site-header__toggle {
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  /* ----- Quote list button: icon and badge on phones, icon + label + badge on desktop ----- */
+
+  .quote-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    margin-right: calc(-1 * var(--space-2));
+    gap: var(--space-2);
+    min-width: 44px;
+    height: 44px;
+    padding: 0 var(--space-3);
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      transform var(--duration-hover) var(--ease),
+      box-shadow var(--duration-hover) var(--ease);
+  }
+
+  .quote-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .quote-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .quote-btn__label {
+    display: none;
+  }
+
+  .quote-btn__count {
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    height: 22px;
+    padding-inline: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--color-orange);
+    box-shadow: 0 0 0 2px var(--color-cream);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  /* Hidden while the list is empty (a script keeps the attribute in step with the count) */
+  .quote-btn__count[data-quote-count='0'] {
+    display: none;
+  }
+
+  .site-header__toggle,
+  .site-menu__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 0;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--color-ink);
     cursor: pointer;
+    transition: background-color var(--duration-hover) var(--ease);
   }
 
-  .site-header__toggle :global(.site-header__toggle-close),
-  .site-header__toggle[aria-expanded='true'] :global(.site-header__toggle-open) {
-    display: none;
+  .site-header__toggle:hover,
+  .site-menu__close:hover {
+    background: var(--color-lavender-soft);
   }
 
-  .site-header__toggle[aria-expanded='true'] :global(.site-header__toggle-close) {
-    display: block;
-  }
-
-  /* ----- Mobile: the nav is a panel under the bar ----- */
+  /* ----- Desktop nav: only from 1180px ----- */
 
   .site-nav {
     display: none;
-    flex-basis: 100%;
-    padding-bottom: var(--space-4);
+    margin-left: auto;
   }
 
-  .site-header.is-open .site-nav {
-    display: block;
-  }
-
-  .site-nav__list,
-  .site-nav__submenu {
+  .site-nav__list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   .site-nav__link {
-    display: flex;
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-1);
-    width: 100%;
-    min-height: 48px;
-    padding: var(--space-2) var(--space-3);
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: transparent;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
     color: var(--color-ink);
     font-weight: 700;
-    text-align: left;
     text-decoration: none;
-    cursor: pointer;
     transition: background-color var(--duration-hover) var(--ease);
   }
 
@@ -205,111 +351,248 @@ const isCurrent = (href: string) => normalize(href) === current;
     background: var(--color-lavender-soft);
   }
 
-  .site-nav__link[aria-current='page'] {
-    color: var(--color-crimson-deep);
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 0.35em;
+  /* The current page: a small crimson wave under the label */
+  .site-nav__link[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    right: var(--space-4);
+    bottom: 3px;
+    left: var(--space-4);
+    height: 8px;
+    background: var(--color-crimson);
+    -webkit-mask: var(--squiggle) repeat-x left center / auto 100%;
+    mask: var(--squiggle) repeat-x left center / auto 100%;
   }
 
-  /* Over a coloured hero (transparent header) crimson-deep may lack contrast: use ink */
-  .site-header:not(.is-scrolled, .is-open) .site-nav__link[aria-current='page'] {
-    color: var(--color-ink);
-  }
+  @media (min-width: 1180px) {
+    .site-nav {
+      display: block;
+    }
 
-  .site-nav__group-button :global(.site-nav__chevron) {
-    transition: transform var(--duration-hover) var(--ease);
-  }
-
-  .site-nav__group-button[aria-expanded='true'] :global(.site-nav__chevron) {
-    transform: rotate(180deg);
-  }
-
-  .site-nav__submenu {
-    display: none;
-    padding-left: var(--space-4);
-  }
-
-  .site-nav__group-button[aria-expanded='true'] + .site-nav__submenu {
-    display: block;
-  }
-
-  /* ----- Desktop: inline nav, "More" is a dropdown ----- */
-
-  @media (min-width: 860px) {
     .site-header__toggle {
       display: none;
     }
 
-    .site-nav {
-      display: block;
-      flex-basis: auto;
-      padding-bottom: 0;
+    .quote-btn {
+      padding: 0 var(--space-4) 0 var(--space-3);
     }
 
-    .site-nav__list {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
+    .quote-btn__label {
+      display: inline;
     }
 
-    .site-nav__link {
-      width: auto;
-      min-height: 44px;
-      padding-inline: var(--space-4);
-    }
-
-    .site-nav__item--group {
-      position: relative;
-    }
-
-    .site-nav__submenu {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      min-width: 11rem;
-      padding: var(--space-2);
-      border-radius: var(--radius-sm);
-      background: var(--color-white);
-      box-shadow: var(--shadow);
-    }
-
-    .site-nav__sublink {
-      white-space: nowrap;
+    .quote-btn__count {
+      position: static;
+      box-shadow: none;
     }
   }
 
-  /* ----- No JavaScript: show every link, no toggles ----- */
+  /* ----- Full-screen menu ----- */
+
+  .site-menu {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-menu);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: var(--color-cream);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 200ms var(--ease),
+      visibility 0s linear 200ms;
+  }
+
+  .site-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  .site-menu__bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--header-height);
+  }
+
+  .site-menu__body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-7);
+    padding-block: var(--space-5) var(--space-7);
+  }
+
+  .site-menu__list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-menu__link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 56px;
+    border-radius: var(--radius-sm);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 9vw, 4rem);
+    font-style: italic;
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.1;
+    text-decoration: none;
+  }
+
+  .site-menu__text {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.1em;
+  }
+
+  /* Hover, focus and the current page draw the squiggle under the label */
+  .site-menu__text::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -0.06em;
+    left: 0;
+    height: 0.2em;
+    background: var(--color-crimson);
+    -webkit-mask: var(--squiggle) repeat-x left center / auto 100%;
+    mask: var(--squiggle) repeat-x left center / auto 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 300ms var(--ease);
+  }
+
+  .site-menu__link:hover .site-menu__text::after,
+  .site-menu__link:focus-visible .site-menu__text::after,
+  .site-menu__link[aria-current='page'] .site-menu__text::after {
+    transform: scaleX(1);
+  }
+
+  .site-menu__channels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .site-menu__channels {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .site-menu__channels .btn {
+    width: 100%;
+  }
+
+  /* Entrance when it opens: links rise 12px, staggered 40ms (the fade is on the menu) */
+  .site-menu.is-open .site-menu__list li,
+  .site-menu.is-open .site-menu__foot {
+    animation: menu-rise 320ms var(--ease) both;
+  }
+
+  .site-menu.is-open .site-menu__list li:nth-child(2) {
+    animation-delay: 40ms;
+  }
+
+  .site-menu.is-open .site-menu__list li:nth-child(3) {
+    animation-delay: 80ms;
+  }
+
+  .site-menu.is-open .site-menu__list li:nth-child(4) {
+    animation-delay: 120ms;
+  }
+
+  .site-menu.is-open .site-menu__list li:nth-child(5) {
+    animation-delay: 160ms;
+  }
+
+  .site-menu.is-open .site-menu__list li:nth-child(6) {
+    animation-delay: 200ms;
+  }
+
+  .site-menu.is-open .site-menu__list li:nth-child(n + 7),
+  .site-menu.is-open .site-menu__foot {
+    animation-delay: 240ms;
+  }
+
+  @keyframes menu-rise {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* The confetti falls in when the menu opens, not at page load */
+  .site-menu:not(.is-open) :global(.confetti > i) {
+    animation: none;
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-menu {
+      transition: none;
+    }
+
+    .site-menu.is-open .site-menu__list li,
+    .site-menu.is-open .site-menu__foot {
+      animation: none;
+    }
+
+    .site-menu__text::after {
+      transition: none;
+    }
+
+    .quote-btn:hover,
+    .quote-btn:active {
+      transform: none;
+    }
+  }
+
+  /* ----- No JavaScript: show the nav on every size, no menu ----- */
 
   :global(.no-js) .site-header {
     position: static;
-    background: var(--color-white);
-    box-shadow: var(--shadow-sm);
   }
 
-  :global(.no-js) .site-header__toggle,
-  :global(.no-js) .site-nav__group-button {
-    display: none;
+  :global(.no-js) .site-header__bar {
+    flex-wrap: wrap;
   }
 
   :global(.no-js) .site-nav {
     display: block;
   }
 
-  :global(.no-js) .site-nav__list {
-    display: flex;
-    flex-wrap: wrap;
+  /* The quote list needs JavaScript */
+  :global(.no-js) .quote-btn,
+  :global(.no-js) .site-header__toggle,
+  :global(.no-js) .site-menu {
+    display: none;
   }
 
-  :global(.no-js) .site-nav__submenu {
-    position: static;
-    display: flex;
-    padding: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  :global(.no-js) .site-nav__link {
-    width: auto;
+  :global(.no-js) main {
+    padding-top: 0;
   }
 </style>
