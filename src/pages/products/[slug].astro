@@ -5,6 +5,7 @@ import { render } from 'astro:content';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ChannelLinks from '../../components/ChannelLinks.astro';
 import ContactForm from '../../components/ContactForm.astro';
+import Icon from '../../components/Icon.astro';
 import Lightbox from '../../components/Lightbox.astro';
 import ProductBuy from '../../components/ProductBuy.astro';
 import ProductGrid from '../../components/ProductGrid.astro';
@@ -116,44 +117,74 @@ const jsonLd = [
       <ProductBuy product={product} image={thumb?.src}>
         {firstParagraph && <p class="product__intro">{firstParagraph}</p>}
       </ProductBuy>
+
+      <div class="folds">
+        <details class="fold" open>
+          <summary class="fold__summary">
+            <h2 class="fold__title">Description</h2>
+            <span class="fold__chevron" aria-hidden="true">
+              <Icon name="chevron-down" size={24} />
+            </span>
+          </summary>
+          <div class="fold__body">
+            <div class="prose">
+              <Content />
+            </div>
+          </div>
+        </details>
+
+        {features.length > 0 && (
+          <details class="fold">
+            <summary class="fold__summary">
+              <h2 class="fold__title">Features</h2>
+              <span class="fold__chevron" aria-hidden="true">
+                <Icon name="chevron-down" size={24} />
+              </span>
+            </summary>
+            <div class="fold__body">
+              <ul class="fold__list">
+                {features.map((feature) => (
+                  <li>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        )}
+
+        <details class="fold">
+          <summary class="fold__summary">
+            <h2 class="fold__title">Shipping &amp; delivery</h2>
+            <span class="fold__chevron" aria-hidden="true">
+              <Icon name="chevron-down" size={24} />
+            </span>
+          </summary>
+          <div class="fold__body">
+            <p>{info.shipping}</p>
+            <a class="link-draw" href="/policies/shipping-pickup/">
+              Read the shipping and pickup policy
+            </a>
+          </div>
+        </details>
+
+        <details class="fold">
+          <summary class="fold__summary">
+            <h2 class="fold__title">Returns &amp; refunds</h2>
+            <span class="fold__chevron" aria-hidden="true">
+              <Icon name="chevron-down" size={24} />
+            </span>
+          </summary>
+          <div class="fold__body">
+            <p>{info.returns}</p>
+            <a class="link-draw" href="/policies/refund-cancellation/">
+              Read the refund and cancellation policy
+            </a>
+          </div>
+        </details>
+      </div>
     </div>
   </article>
 
   <div class="container product-details">
-    <section aria-labelledby="description-title">
-      <h2 id="description-title">Description</h2>
-      <div class="prose">
-        <Content />
-      </div>
-    </section>
-
-    {features.length > 0 && (
-      <section aria-labelledby="features-title">
-        <h2 id="features-title">Features</h2>
-        <ul class="product-details__list">
-          {features.map((feature) => (
-            <li>{feature}</li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <section aria-labelledby="shipping-title">
-      <h2 id="shipping-title">Shipping &amp; delivery</h2>
-      <p>{info.shipping}</p>
-      <a class="link-draw" href="/policies/shipping-pickup/">
-        Read the shipping and pickup policy
-      </a>
-    </section>
-
-    <section aria-labelledby="returns-title">
-      <h2 id="returns-title">Returns &amp; refunds</h2>
-      <p>{info.returns}</p>
-      <a class="link-draw" href="/policies/refund-cancellation/">
-        Read the refund and cancellation policy
-      </a>
-    </section>
-
     {categories.length > 0 && (
       <section aria-labelledby="categories-title">
         <h2 id="categories-title">Categories</h2>
@@ -232,42 +263,116 @@ const jsonLd = [
     font-size: var(--text-lead);
   }
 
-  /* ----- Description, features, shipping, returns ----- */
+  /* ----- Description, features, shipping, returns: native <details> ----- */
 
-  .product-details {
-    display: grid;
-    gap: var(--space-7);
-    padding-bottom: var(--space-7);
+  .folds {
+    margin-top: var(--space-2);
+    border-top: 2px solid var(--color-border);
   }
 
-  .product-details > section {
-    max-width: var(--content-narrow);
+  .fold {
+    border-bottom: 2px solid var(--color-border);
   }
 
-  .product-details h2 {
+  .fold__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 56px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .fold__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .fold__summary:focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  .fold__title {
+    margin: 0;
     font-size: var(--text-h3);
     font-style: normal;
     letter-spacing: 0;
   }
 
-  .product-details p {
+  .fold__chevron {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--color-ink);
+  }
+
+  .fold[open] .fold__chevron {
+    transform: rotate(180deg);
+  }
+
+  .fold__body {
+    padding-bottom: var(--space-5);
+  }
+
+  .fold__body > :first-child {
+    margin-top: 0;
+  }
+
+  .fold__body p {
     max-width: var(--measure);
   }
 
-  .product-details a.link-draw {
+  .fold__body a.link-draw {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
     font-weight: 700;
   }
 
-  .product-details__list {
+  .fold__list {
     max-width: var(--measure);
     margin: 0;
   }
 
-  .product-details__list li + li {
+  .fold__list li + li {
     margin-top: var(--space-2);
+  }
+
+  /* Smooth open and close where the browser supports it. Without it the section just opens. */
+  @media (prefers-reduced-motion: no-preference) {
+    .fold__chevron {
+      transition: transform var(--duration-hover) var(--ease);
+    }
+
+    @supports (interpolate-size: allow-keywords) {
+      .fold {
+        interpolate-size: allow-keywords;
+      }
+
+      .fold::details-content {
+        block-size: 0;
+        overflow: clip;
+        transition:
+          block-size var(--duration-hover) var(--ease),
+          content-visibility var(--duration-hover) var(--ease) allow-discrete;
+      }
+
+      .fold[open]::details-content {
+        block-size: auto;
+      }
+    }
+  }
+
+  /* ----- Categories ----- */
+
+  .product-details {
+    padding-bottom: var(--space-7);
+  }
+
+  .product-details h2 {
+    font-size: var(--text-h3);
+    font-style: normal;
+    letter-spacing: 0;
   }
 
   .product-details__chips {

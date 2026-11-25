@@ -21,7 +21,13 @@ const url = `/products/${product.id}/`;
 const message = buildMessage({ id: product.id, name });
 ---
 
-<div class="buy" data-buy data-base-price={price} data-base-message={message}>
+<div
+  class="buy"
+  data-buy
+  data-base-price={price}
+  data-product-id={product.id}
+  data-product-name={name}
+>
   <p class="buy__price" aria-live="polite" aria-atomic="true" data-buy-price>
     {formatPrice(price)}
   </p>

@@ -20,6 +20,7 @@ import {
   type QuoteDetails,
   type QuoteItem,
 } from '../lib/quote';
+import { copyText } from './clipboard';
 import { changeQty, getItems, QUOTE_CHANGE_EVENT, removeFromQuote } from './quote';
 import { showToast } from './toast';
 
@@ -251,17 +252,15 @@ export function initQuoteDrawer(): void {
   // ----- Copy list -----
 
   copyButton.addEventListener('click', () => {
-    const text = message.value;
-    const select = () => {
+    void copyText(message.value).then((copied) => {
+      if (copied) {
+        showToast('Quote list copied.');
+        return;
+      }
       message.focus();
       message.select();
       showToast('Message selected. Copy it from the preview.');
-    };
-    if (!navigator.clipboard) {
-      select();
-      return;
-    }
-    navigator.clipboard.writeText(text).then(() => showToast('Quote list copied.'), select);
+    });
   });
 
   // ----- Open and close -----

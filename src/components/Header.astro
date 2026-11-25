@@ -88,7 +88,7 @@ const channels: {
         data-items="0"
         aria-label="Quote list, 0 items"
       >
-        <Icon name="clipboard-list" size={22} />
+        <Icon name="shopping-cart" size={22} />
         <span class="quote-btn__label">Quote list</span>
         <span class="quote-btn__count" data-quote-count="0">
           0
@@ -198,12 +198,16 @@ const channels: {
     position: fixed;
     inset: 0 0 auto;
     z-index: var(--z-header);
-    border-bottom: 1px solid var(--color-hairline);
+    border-bottom: 1px solid transparent;
     background: var(--color-header-solid);
-    transition: box-shadow var(--duration-hover) var(--ease);
+    transition:
+      box-shadow var(--duration-hover) var(--ease),
+      border-color var(--duration-hover) var(--ease);
   }
 
+  /* The border and the shadow show once the page has scrolled (menu.ts sets the class) */
   .site-header.is-scrolled {
+    border-bottom-color: var(--color-hairline);
     box-shadow: var(--shadow-sm);
   }
 
@@ -251,7 +255,7 @@ const channels: {
     min-width: 44px;
     height: 44px;
     padding: 0 var(--space-3);
-    border: 2px solid var(--color-ink);
+    border: 2px solid var(--color-crimson);
     border-radius: var(--radius-pill);
     background: var(--color-white);
     color: var(--color-ink);
@@ -270,6 +274,11 @@ const channels: {
 
   .quote-btn:active {
     transform: translateY(0) scale(0.98);
+  }
+
+  /* The cart icon is the light green outline; the label stays ink */
+  .quote-btn :global(.icon) {
+    color: var(--color-crimson);
   }
 
   .quote-btn__label {

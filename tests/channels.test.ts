@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildMessage, channelLinks, productUrl, smsLink, whatsappLink } from '../src/lib/channels';
+import {
+  buildMessage,
+  buildProductMessage,
+  channelLinks,
+  productUrl,
+  smsLink,
+  whatsappLink,
+} from '../src/lib/channels';
 
 const product = { id: 'hot-air-balloon', name: 'Hot Air Balloon' };
 
@@ -53,5 +60,32 @@ describe('channel links', () => {
     expect(links.phone).toBe('tel:+12269786720');
     expect(links.instagram).toBe('https://ig.me/m/theballoonistry');
     expect(links).not.toHaveProperty('messenger');
+  });
+});
+
+describe('buildProductMessage', () => {
+  it('is the plain product message without options', () => {
+    expect(buildProductMessage(product)).toBe(buildMessage(product));
+  });
+
+  it('adds the chosen options, one line per group', () => {
+    const message = buildProductMessage(product, [
+      { group: 'Flowers', choice: 'Natural fresh flowers', price: 15 },
+      { group: 'Add-ons', choice: 'Chocolates', price: 10 },
+      { group: 'Add-ons', choice: 'Card', price: 3 },
+    ]);
+    const first =
+      "Hi Balloonistry! I'd like to order the Hot Air Balloon " +
+      '(https://www.balloonistry.ca/products/hot-air-balloon/).';
+    expect(message).toBe(
+      `${first}\nFlowers: Natural fresh flowers\nAdd-ons: Chocolates, Card\n` +
+        'Date: \nColours / theme: \nPickup or delivery: ',
+    );
+  });
+
+  it('adds the quantity only above 1, right after the first line, and keeps it in range', () => {
+    expect(buildProductMessage(product, [], 1)).not.toContain('Quantity');
+    expect(buildProductMessage(product, [], 3).split('\n')[1]).toBe('Quantity: 3');
+    expect(buildProductMessage(product, [], 99)).toContain('\nQuantity: 20\n');
   });
 });

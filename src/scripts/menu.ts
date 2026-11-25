@@ -1,5 +1,5 @@
 /**
- * Header behaviour: shadow after 20px of scroll, and the full-screen menu
+ * Header behaviour: border and shadow after 20px of scroll, and the full-screen menu
  * (focus trap, Esc, scroll lock, focus return, aria-expanded).
  */
 
@@ -18,6 +18,8 @@ export function initMenu(): void {
   const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > SCROLL_THRESHOLD);
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+  // A page restored from the back/forward cache or reloaded mid-page keeps the right state
+  window.addEventListener('pageshow', onScroll);
 
   if (!menu || !toggle) return;
   const root = document.documentElement;

@@ -20,12 +20,14 @@ const [lead, word, end] = match ? [match[1], match[2], match[3]] : [site.tagline
 <section class="hero band band--cream" aria-labelledby="hero-title">
   <div class="container hero__grid">
     <div class="hero__text">
-      <p class="eyebrow enter">Kitchener-Waterloo, Ontario</p>
-      <h1 id="hero-title" class="enter enter-d1">
+      <h1 class="hero__kicker enter">
+        Custom Balloon Gifts &amp; Event Decor | Kitchener, Waterloo, Cambridge
+      </h1>
+      <h2 id="hero-title" class="hero__title enter enter-d1">
         {lead}
         {word ? <Squiggle>{word}</Squiggle> : null}
         {end}
-      </h1>
+      </h2>
       <p class="hero__lead enter enter-d2">
         Welcome to Balloonistry, where every balloon tells a story. Explore our collection of custom
         bobo balloon gifts, helium balloons, surprises, and more, perfect for all occasions.
@@ -93,7 +95,26 @@ const [lead, word, end] = match ? [match[1], match[2], match[3]] : [site.tagline
 
   /* ----- Text: a huge, tight italic headline, left aligned ----- */
 
-  .hero__text h1 {
+  /* The page's h1: a small, prominent sentence above the big tagline */
+  .hero__kicker {
+    max-width: 36ch;
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  @media (min-width: 860px) {
+    .hero__kicker {
+      font-size: 1.125rem;
+    }
+  }
+
+  .hero__title {
     max-width: 11ch;
     margin-bottom: var(--space-6);
     font-size: var(--text-display-1);

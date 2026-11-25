@@ -3,6 +3,7 @@
  * The base links come from src/config/site.ts.
  */
 import { site } from '../config/site';
+import { clampQty, optionLines, type QuoteOption } from './quote';
 
 export const CHANNELS = ['whatsapp', 'instagram', 'sms', 'phone', 'form'] as const;
 export type Channel = (typeof CHANNELS)[number];
@@ -37,6 +38,23 @@ export function buildMessage(product?: ProductRef): string {
     'Colours / theme: ',
     'Pickup or delivery: ',
   ].join('\n');
+}
+
+/**
+ * The product message with the visitor's current choice: the options (one line per group)
+ * and, above 1, the quantity. Used by "Ask on WhatsApp" and the product page Instagram copy.
+ */
+export function buildProductMessage(
+  product: ProductRef,
+  options: QuoteOption[] = [],
+  qty = 1,
+): string {
+  const lines = optionLines(options);
+  const count = clampQty(qty);
+  if (count > 1) lines.push(`Quantity: ${count}`);
+  // The choice goes right after the first line, before the lines the customer fills in
+  const [first = '', ...rest] = buildMessage(product).split('\n');
+  return [first, ...lines, ...rest].join('\n');
 }
 
 export function whatsappLink(message: string): string {

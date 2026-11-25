@@ -114,12 +114,18 @@ const policies = defineCollection({
 
 const testimonials = defineCollection({
   loader: file('./src/content/testimonials.json'),
-  schema: z.object({
-    name: z.string().min(1),
-    city: z.string().min(1),
-    text: z.string().min(1),
-    featured: z.boolean().default(false),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      /** Customer name. */
+      name: z.string().min(1),
+      city: z.string().min(1).optional(),
+      /** The review text. */
+      message: z.string().min(1),
+      /** Photo, relative to this file, in src/assets/testimonials/. */
+      image: image(),
+      /** Shown first in the carousel. */
+      featured: z.boolean().default(false),
+    }),
 });
 
 /** Text shared by every product page. */

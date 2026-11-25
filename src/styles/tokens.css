@@ -17,6 +17,8 @@
   /* Channel icon colours (graphics only, 3:1 or better on white) */
   --color-whatsapp: #128c4a;
   --color-instagram: #c13584;
+  /* Light green: the quote list (cart) outline. Decorative graphic colour, never text. */
+  --color-mint: #7ccf8a;
   --color-error: #b3261e;
   --color-success: #1e7a4c;
 
@@ -97,6 +99,10 @@
   --duration-confetti: 0.9s;
   --duration-reveal: 0.8s;
   --duration-zoom: 1.4s;
+  /* Product photo hover zoom-in, on every product page. Change it here only. */
+  --duration-media-zoom: 0.25s;
+  /* Slide change in the carousels (testimonials, expanded product media) */
+  --duration-slide: 0.5s;
   /* Springy overshoot for hover "inflate" effects */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-spring: 0.45s;

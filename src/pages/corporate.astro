@@ -8,7 +8,7 @@ import Fringe from '../components/Fringe.astro';
 import HowItWorks from '../components/HowItWorks.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { eventGallery } from '../config/events';
+import { corporateGallery, eventGallery } from '../config/events';
 import { site } from '../config/site';
 
 const QUOTE_ID = 'quote';
@@ -104,7 +104,7 @@ const steps = [
   <section class="section band band--turquoise-soft" aria-labelledby="gallery-title">
     <div class="container">
       <SectionHeader eyebrow="Gallery" title="Our balloon work" id="gallery-title" />
-      <EventGallery />
+      <EventGallery photos={corporateGallery} initial={6} id="corporate-gallery" />
     </div>
   </section>
 

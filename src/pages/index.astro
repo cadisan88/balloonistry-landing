@@ -11,7 +11,7 @@ import HowItWorks from '../components/HowItWorks.astro';
 import Lightbox from '../components/Lightbox.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import SectionHeader from '../components/SectionHeader.astro';
-import Testimonial from '../components/Testimonial.astro';
+import TestimonialCarousel from '../components/TestimonialCarousel.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getFeaturedProducts, getVisibleCategories } from '../lib/content';
 
@@ -20,7 +20,8 @@ const [featured, categories, testimonials] = await Promise.all([
   getVisibleCategories(),
   getCollection('testimonials'),
 ]);
-const testimonial = testimonials.find((entry) => entry.data.featured);
+// Featured reviews first, then the file order
+const reviews = [...testimonials].sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
 
 const orderSteps = [
   { title: 'Pick your favourites', text: 'Browse the shop and choose the balloons you love.' },
@@ -30,7 +31,7 @@ const orderSteps = [
   },
   {
     title: 'Send the list',
-    text: 'Send it on WhatsApp, Instagram, text or a call.',
+    text: 'Send it on WhatsApp, Instagram, text or a call; we will contact you ASAP.',
   },
 ];
 ---
@@ -114,13 +115,13 @@ const orderSteps = [
     </div>
   </section>
 
-  {testimonial && (
+  {reviews.length > 0 && (
     <section class="section band band--white" aria-labelledby="love-title">
       <div class="container">
         <h2 class="home-love__title" id="love-title">
           Client love
         </h2>
-        <Testimonial testimonial={testimonial} />
+        <TestimonialCarousel testimonials={reviews} labelledby="love-title" />
       </div>
     </section>
   )}
@@ -186,9 +187,9 @@ const orderSteps = [
 
   /* ----- Client love ----- */
 
-  /* Lines up with the quote text below it */
+  /* Lines up with the carousel below it */
   .home-love__title {
-    max-width: 48rem;
+    max-width: 56rem;
     margin: 0 auto var(--space-5);
     font-family: var(--font-body);
     font-size: var(--text-eyebrow);

@@ -4,20 +4,32 @@
  * On wider screens the middle arch sits higher, so the row feels hand placed.
  */
 import { Picture } from 'astro:assets';
-import { eventGallery } from '../config/events';
+import { eventGallery, type GalleryPhoto } from '../config/events';
 
 interface Props {
+  /** The photos. Default: the event gallery. */
+  photos?: GalleryPhoto[];
   /** How many photos to show. Default: all. */
   limit?: number;
+  /** Show this many first, and the rest after a "See more photos" button. Default: all. */
+  initial?: number;
+  /** Id of the list. Needed once per page when `initial` is used (aria-controls). */
+  id?: string;
 }
 
-const { limit } = Astro.props;
-const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
+const { photos: source = eventGallery, limit, initial, id = 'event-gallery' } = Astro.props;
+const photos = limit ? source.slice(0, limit) : source;
+const firstCount = initial && initial < photos.length ? initial : photos.length;
+const hasMore = firstCount < photos.length;
 ---
 
-<ul class="event-gallery">
-  {photos.map((photo) => (
-    <li class="event-gallery__item">
+<ul class="event-gallery" id={id} data-gallery-list data-collapsed={hasMore ? 'true' : undefined}>
+  {photos.map((photo, index) => (
+    <li
+      class:list={['event-gallery__item', { 'is-extra': index >= firstCount }]}
+      tabindex={index === firstCount ? -1 : undefined}
+      data-gallery-first-extra={index === firstCount ? '' : undefined}
+    >
       <div class="event-gallery__media zoom-out">
         <Picture
           src={photo.image}
@@ -31,6 +43,28 @@ const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
     </li>
   ))}
 </ul>
+
+{hasMore && (
+  <div class="event-gallery__more" data-gallery-more>
+    <button
+      class="btn btn-secondary"
+      type="button"
+      aria-expanded="false"
+      aria-controls={id}
+      data-gallery-toggle
+      data-more-label="See more photos"
+      data-less-label="Show fewer photos"
+    >
+      See more photos
+    </button>
+  </div>
+)}
+
+<script>
+  import { initGalleryMore } from '../scripts/gallery-more';
+
+  initGalleryMore();
+</script>
 
 <style>
   .event-gallery {
@@ -97,6 +131,46 @@ const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
     .event-gallery__item:nth-child(3n + 2) {
       margin-top: calc(-1 * var(--space-6));
       margin-bottom: var(--space-6);
+    }
+  }
+
+  /* The button needs JavaScript. Without it every photo shows. */
+  .event-gallery__more {
+    display: none;
+    margin-top: var(--space-7);
+  }
+
+  :global(.js) .event-gallery__more {
+    display: flex;
+    justify-content: center;
+  }
+
+  :global(.js) .event-gallery[data-collapsed] .is-extra {
+    display: none;
+  }
+
+  /* Photos that were just revealed fade in */
+  .event-gallery__item.is-extra {
+    animation: gallery-reveal var(--duration-enter) var(--ease) both;
+  }
+
+  .event-gallery__item:focus-visible {
+    outline-offset: 6px;
+  }
+
+  @keyframes gallery-reveal {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .event-gallery__item.is-extra {
+      animation: none;
     }
   }
 

@@ -6,16 +6,17 @@
  * Adding to the list itself is src/scripts/quote.ts, which reads the `data-quote-add` attributes
  * this script keeps up to date before any click (the analytics read the same attributes).
  */
-import { whatsappLink } from '../lib/channels';
+import { buildProductMessage, whatsappLink } from '../lib/channels';
 import { formatPrice } from '../lib/price';
-import { clampQty, optionLines, type QuoteOption } from '../lib/quote';
+import { clampQty, type QuoteOption } from '../lib/quote';
 
 function setup(root: HTMLElement): void {
   const priceText = root.querySelector<HTMLElement>('[data-buy-price]');
   const qtyInput = root.querySelector<HTMLInputElement>('[data-buy-qty]');
   const addButton = root.querySelector<HTMLElement>('[data-quote-add]');
   const ask = root.querySelector<HTMLAnchorElement>('[data-buy-ask]');
-  const baseMessage = root.dataset.baseMessage ?? '';
+  const product = { id: root.dataset.productId ?? '', name: root.dataset.productName ?? '' };
+  const copyLinks = document.querySelectorAll<HTMLElement>('[data-product-copy]');
   const basePrice = root.dataset.basePrice ? Number(root.dataset.basePrice) : undefined;
   const inputs = [...root.querySelectorAll<HTMLInputElement>('[data-option-input]')];
 
@@ -46,11 +47,10 @@ function setup(root: HTMLElement): void {
       else addButton.dataset.unitPrice = String(unit);
     }
 
-    if (ask) {
-      const lines = optionLines(options);
-      if (qty > 1) lines.push(`Quantity: ${qty}`);
-      ask.href = whatsappLink([baseMessage, ...lines].join('\n'));
-    }
+    const message = buildProductMessage(product, options, qty);
+    if (ask) ask.href = whatsappLink(message);
+    // Every product page Instagram button copies the same message as "Ask on WhatsApp"
+    for (const link of copyLinks) link.dataset.copyMessage = message;
   };
 
   for (const input of inputs) input.addEventListener('change', update);

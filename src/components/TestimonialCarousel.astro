@@ -1,0 +1,199 @@
+---
+/**
+ * "Client love" carousel: one review at a time, with prev/next, dots and a Pause button.
+ * Timing comes from src/config/ui.ts. Behaviour is in src/scripts/carousel.ts.
+ * Without JavaScript every review is shown in a list. With one review there are no controls.
+ */
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import Testimonial from './Testimonial.astro';
+import { TESTIMONIAL_AUTOPLAY_MS } from '../config/ui';
+
+interface Props {
+  testimonials: CollectionEntry<'testimonials'>[];
+  /** Id of the heading that names the section. */
+  labelledby: string;
+}
+
+const { testimonials, labelledby } = Astro.props;
+const count = testimonials.length;
+const multiple = count > 1;
+---
+
+{count > 0 && (
+  <section
+    class="carousel"
+    aria-roledescription="carousel"
+    aria-labelledby={labelledby}
+    data-carousel
+    data-autoplay-ms={multiple ? TESTIMONIAL_AUTOPLAY_MS : undefined}
+  >
+    <div class="carousel__slides" data-carousel-slides aria-live="off">
+      {testimonials.map((testimonial, index) => (
+        <div
+          class:list={['carousel__slide', { 'is-active': index === 0 }]}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${index + 1} of ${count}`}
+          data-carousel-slide
+        >
+          <Testimonial testimonial={testimonial} />
+        </div>
+      ))}
+    </div>
+
+    {multiple && (
+      <div class="carousel__controls">
+        <button class="carousel__btn" type="button" data-carousel-prev aria-label="Previous review">
+          <Icon name="chevron-left" size={22} />
+        </button>
+        <div class="carousel__dots">
+          {testimonials.map((_, index) => (
+            <button
+              class="carousel__dot"
+              type="button"
+              data-carousel-dot
+              aria-label={`Show review ${index + 1} of ${count}`}
+              aria-current={index === 0 ? 'true' : undefined}
+            />
+          ))}
+        </div>
+        <button class="carousel__btn" type="button" data-carousel-next aria-label="Next review">
+          <Icon name="chevron-right" size={22} />
+        </button>
+        <button class="carousel__pause" type="button" data-carousel-toggle aria-pressed="false">
+          Pause
+        </button>
+      </div>
+    )}
+  </section>
+)}
+
+<script>
+  import { initCarousels } from '../scripts/carousel';
+
+  initCarousels();
+</script>
+
+<style>
+  .carousel {
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+
+  /* No JavaScript: the reviews are a plain list, one under the other */
+  .carousel__slides {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .carousel__controls {
+    display: none;
+  }
+
+  /* With JavaScript: the slides share one cell and cross-fade */
+  :global(.js) .carousel__slides {
+    gap: 0;
+  }
+
+  :global(.js) .carousel__slide {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    translate: var(--space-6) 0;
+    transition:
+      opacity var(--duration-slide) var(--ease),
+      translate var(--duration-slide) var(--ease),
+      visibility 0s linear var(--duration-slide);
+  }
+
+  :global(.js) .carousel__slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    transition-delay: 0s;
+  }
+
+  :global(.js) .carousel__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+
+  .carousel__btn,
+  .carousel__pause {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--duration-hover) var(--ease);
+  }
+
+  .carousel__pause {
+    padding-inline: var(--space-4);
+  }
+
+  .carousel__pause[hidden] {
+    display: none;
+  }
+
+  .carousel__btn:hover,
+  .carousel__pause:hover {
+    background: var(--color-lavender-soft);
+  }
+
+  .carousel__dots {
+    display: flex;
+    align-items: center;
+  }
+
+  /* The dot is small to look at but 44px to tap */
+  .carousel__dot {
+    position: relative;
+    width: 32px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .carousel__dot::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    translate: -50% -50%;
+    transition: background-color var(--duration-hover) var(--ease);
+  }
+
+  .carousel__dot[aria-current='true']::before {
+    background: var(--color-ink);
+  }
+
+  .carousel__dot:focus-visible,
+  .carousel__btn:focus-visible,
+  .carousel__pause:focus-visible {
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .carousel__slide {
+      transition: none;
+      translate: 0 0;
+    }
+  }
+</style>
