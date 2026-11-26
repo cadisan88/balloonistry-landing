@@ -16,7 +16,17 @@ export interface ProductLike {
     available: boolean;
     featured: boolean;
     categories: { id: string }[];
+    price?: number | undefined;
+    popularity?: number | undefined;
+    added?: Date | undefined;
   };
+}
+
+export const SORT_KEYS = ['recommended', 'price-asc', 'price-desc', 'popular', 'newest'] as const;
+export type SortKey = (typeof SORT_KEYS)[number];
+
+export function isSortKey(value: unknown): value is SortKey {
+  return typeof value === 'string' && (SORT_KEYS as readonly string[]).includes(value);
 }
 
 export const MAX_FEATURED = 8;
@@ -27,6 +37,68 @@ export function sortByOrder<T extends { data: { name: string; order: number } }>
   return [...items].sort(
     (a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name, 'en-CA'),
   );
+}
+
+/** The fields a sort looks at. `added` is a time in milliseconds. */
+export interface SortFields {
+  name: string;
+  order: number;
+  price?: number | undefined;
+  popularity?: number | undefined;
+  added?: number | undefined;
+}
+
+type Sortable = {
+  data: {
+    name: string;
+    order: number;
+    price?: number | undefined;
+    popularity?: number | undefined;
+    added?: Date | undefined;
+  };
+};
+
+function missingLast(a: number | undefined, b: number | undefined, dir: 1 | -1): number {
+  if (a === undefined && b === undefined) return 0;
+  if (a === undefined) return 1;
+  if (b === undefined) return -1;
+  return (a - b) * dir;
+}
+
+/**
+ * The comparator behind every sort of the shop toolbar. It also runs in the browser
+ * (src/scripts/shop-sort.ts), so the page and the build always agree.
+ * Ties and missing values fall back to `order`, then name. A missing price or date sorts last.
+ */
+export function compareProducts(key: SortKey): (a: SortFields, b: SortFields) => number {
+  const byKey = (a: SortFields, b: SortFields): number => {
+    switch (key) {
+      case 'price-asc':
+        return missingLast(a.price, b.price, 1);
+      case 'price-desc':
+        return missingLast(a.price, b.price, -1);
+      case 'popular':
+        return (b.popularity ?? 0) - (a.popularity ?? 0);
+      case 'newest':
+        return missingLast(a.added, b.added, -1);
+      default:
+        return 0;
+    }
+  };
+  return (a, b) => byKey(a, b) || a.order - b.order || a.name.localeCompare(b.name, 'en-CA');
+}
+
+/** Sorts for the shop toolbar. Does not change the input. */
+export function sortProducts<T extends Sortable>(products: T[], key: SortKey): T[] {
+  const compare = compareProducts(key);
+  const fields = (product: T): SortFields => ({
+    name: product.data.name,
+    order: product.data.order,
+    price: product.data.price,
+    popularity: product.data.popularity,
+    added: product.data.added?.getTime(),
+  });
+  return [...products].sort((a, b) => compare(fields(a), fields(b)));
 }
 
 /** Categories with `visible: true`, sorted. Hidden categories never appear anywhere. */

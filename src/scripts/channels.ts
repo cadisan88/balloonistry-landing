@@ -1,12 +1,13 @@
 /**
  * Channel button behaviour shared by every page:
- * - Instagram and Messenger: copy the message, show a toast, then open the chat.
+ * - Instagram: copy the message, show a toast, then open the chat.
  * - "Order with the form" with an on-page anchor: scroll to the form and focus the first field.
  */
 import { track } from '../lib/analytics';
+import { copyText } from './clipboard';
 import { showToast } from './toast';
 
-const COPIED_TEXT = 'Message copied. Paste it in the chat.';
+const COPIED_TEXT = 'Message copied. Paste it in Instagram.';
 
 /** Scrolls to a form section and puts the cursor in its first empty field. */
 export function goToForm(target: HTMLElement): void {
@@ -28,18 +29,32 @@ export function initChannels(): void {
     if (!link) return;
 
     // Copy the message for chats that cannot be pre-filled. The link still opens as usual.
-    const message = link.dataset.copyMessage;
-    if (message && navigator.clipboard) {
-      navigator.clipboard.writeText(message).then(
-        () => {
-          showToast(COPIED_TEXT);
-          const channel = link.dataset.channel;
-          if (channel === 'instagram' || channel === 'messenger') {
-            track('message_copied', { channel, product: link.dataset.product || undefined });
+    // The copy starts here, inside the click, so the link below still opens as a user gesture.
+    if (link.dataset.copyMessage !== undefined) {
+      // The quote drawer: the preview is the message that is sent, so copy exactly that
+      const preview = link
+        .closest('dialog')
+        ?.querySelector<HTMLTextAreaElement>('[data-drawer-message]');
+      const message = preview ? preview.value : link.dataset.copyMessage;
+      if (message) {
+        void copyText(message).then((copied) => {
+          if (copied) {
+            showToast(COPIED_TEXT);
+            if (link.dataset.channel === 'instagram') {
+              track('message_copied', {
+                channel: 'instagram',
+                product: link.dataset.product || undefined,
+              });
+            }
+          } else if (preview) {
+            preview.focus();
+            preview.select();
+            showToast('Could not copy. Copy the message shown in the preview, then paste it.');
+          } else {
+            showToast('Could not copy the message. Please type your request in Instagram.');
           }
-        },
-        () => undefined, // If the copy fails, the link just opens.
-      );
+        });
+      }
     }
 
     // Form link to an anchor on this page

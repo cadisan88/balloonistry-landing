@@ -4,20 +4,25 @@
  * On wider screens the middle arch sits higher, so the row feels hand placed.
  */
 import { Picture } from 'astro:assets';
-import { eventGallery } from '../config/events';
+import type { GalleryPhoto } from '../lib/content';
 
 interface Props {
+  /** The photos. */
+  photos: GalleryPhoto[];
   /** How many photos to show. Default: all. */
   limit?: number;
+  /** Where "See more photos" goes. The link shows only when there are more photos than `limit`. */
+  moreHref?: string;
 }
 
-const { limit } = Astro.props;
-const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
+const { photos: source, limit, moreHref } = Astro.props;
+const photos = limit ? source.slice(0, limit) : source;
+const hasMore = Boolean(moreHref) && photos.length < source.length;
 ---
 
 <ul class="event-gallery">
   {photos.map((photo) => (
-    <li class="event-gallery__item reveal">
+    <li class="event-gallery__item">
       <div class="event-gallery__media zoom-out">
         <Picture
           src={photo.image}
@@ -31,6 +36,14 @@ const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
     </li>
   ))}
 </ul>
+
+{hasMore && (
+  <div class="event-gallery__more">
+    <a class="btn btn-secondary" href={moreHref}>
+      See more photos
+    </a>
+  </div>
+)}
 
 <style>
   .event-gallery {
@@ -98,6 +111,13 @@ const photos = limit ? eventGallery.slice(0, limit) : eventGallery;
       margin-top: calc(-1 * var(--space-6));
       margin-bottom: var(--space-6);
     }
+  }
+
+  /* A link to the full gallery page, centred under the photos */
+  .event-gallery__more {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-7);
   }
 
   .event-gallery__media {

@@ -3,13 +3,21 @@
  * The base links come from src/config/site.ts.
  */
 import { site } from '../config/site';
+import { clampQty, optionLines, type QuoteOption } from './quote';
 
-export const CHANNELS = ['form', 'whatsapp', 'sms', 'phone', 'instagram', 'messenger'] as const;
+export const CHANNELS = ['whatsapp', 'instagram', 'sms', 'phone', 'form'] as const;
 export type Channel = (typeof CHANNELS)[number];
 
 /** Where a channel button is shown. Sent with the `order_channel_clicked` event. */
 export type ChannelLocation =
-  'product_panel' | 'channel_sheet' | 'contact_section' | 'footer' | 'events' | 'category_empty';
+  | 'product_panel'
+  | 'channel_sheet'
+  | 'contact_section'
+  | 'footer'
+  | 'events'
+  | 'category_empty'
+  | 'quote_drawer'
+  | 'corporate';
 
 export interface ProductRef {
   id: string;
@@ -32,6 +40,23 @@ export function buildMessage(product?: ProductRef): string {
   ].join('\n');
 }
 
+/**
+ * The product message with the visitor's current choice: the options (one line per group)
+ * and, above 1, the quantity. Used by "Ask on WhatsApp" and the product page Instagram copy.
+ */
+export function buildProductMessage(
+  product: ProductRef,
+  options: QuoteOption[] = [],
+  qty = 1,
+): string {
+  const lines = optionLines(options);
+  const count = clampQty(qty);
+  if (count > 1) lines.push(`Quantity: ${count}`);
+  // The choice goes right after the first line, before the lines the customer fills in
+  const [first = '', ...rest] = buildMessage(product).split('\n');
+  return [first, ...lines, ...rest].join('\n');
+}
+
 export function whatsappLink(message: string): string {
   return `${site.channels.whatsapp}?text=${encodeURIComponent(message)}`;
 }
@@ -46,16 +71,14 @@ export interface ChannelLinks {
   sms: string;
   phone: string;
   instagram: string;
-  messenger: string;
 }
 
-/** WhatsApp and SMS carry the message. Phone, Instagram and Messenger cannot. */
+/** WhatsApp and SMS carry the message. Phone and Instagram cannot. */
 export function channelLinks(message: string): ChannelLinks {
   return {
     whatsapp: whatsappLink(message),
     sms: smsLink(message),
     phone: site.channels.phone,
     instagram: site.channels.instagram,
-    messenger: site.channels.messenger,
   };
 }

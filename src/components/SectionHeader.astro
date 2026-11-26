@@ -1,25 +1,18 @@
 ---
-/** Eyebrow, H2 and an optional intro. Fades in on scroll. */
+/** Eyebrow, big italic H2 and an optional intro. Fades in on scroll (the only reveal on a page). */
 interface Props {
   eyebrow?: string;
   title: string;
   id?: string;
   align?: 'start' | 'center';
-  /** Large italic display title (home page). */
+  /** Kept for older pages: every section heading is now the large display size. */
   display?: boolean;
 }
 
-const { eyebrow, title, id, align = 'start', display = false } = Astro.props;
+const { eyebrow, title, id, align = 'start' } = Astro.props;
 ---
 
-<header
-  class:list={[
-    'section-header',
-    'reveal',
-    `section-header--${align}`,
-    { 'section-header--display': display },
-  ]}
->
+<header class:list={['section-header', 'reveal', `section-header--${align}`]}>
   {eyebrow && <p class="eyebrow">{eyebrow}</p>}
   <h2 id={id}>{title}</h2>
   <slot />
@@ -27,7 +20,7 @@ const { eyebrow, title, id, align = 'start', display = false } = Astro.props;
 
 <style>
   .section-header {
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-7);
   }
 
   .section-header > :global(:last-child) {
@@ -42,21 +35,19 @@ const { eyebrow, title, id, align = 'start', display = false } = Astro.props;
     margin-inline: auto;
   }
 
-  .section-header--display {
-    margin-bottom: var(--space-7);
-  }
-
-  .section-header--display h2 {
+  .section-header h2 {
     max-width: 18ch;
     margin-bottom: var(--space-4);
     font-size: var(--text-display-2);
-    font-style: italic;
-    line-height: 1.02;
-    letter-spacing: -0.02em;
+    line-height: var(--leading-display);
   }
 
-  .section-header--display :global(p) {
+  .section-header--center h2 {
+    margin-inline: auto;
+  }
+
+  .section-header :global(p:not(.eyebrow)) {
     max-width: 52ch;
-    font-size: 1.125rem;
+    font-size: var(--text-lead);
   }
 </style>

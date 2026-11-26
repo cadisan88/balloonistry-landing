@@ -9,6 +9,30 @@ images:
   - ../../assets/products/centerpiece_03.png
   - ../../assets/products/centerpiece_04.png
 order: 10
+popularity: 40
+added: 2026-11-15
+features:
+  - 'TODO: feature from the owner (size, balloon count, colours)'
+  - 'TODO: feature from the owner (what is included)'
+options:
+  - name: Flowers
+    type: single
+    choices:
+      - label: Artificial flowers
+        price: 0
+      - label: Natural fresh flowers
+        price: 15
+  - name: Plush
+    type: single
+    choices:
+      - { label: No plush, price: 0 }
+      - { label: Teddy bear, price: 12 }
+      - { label: Bunny, price: 12 }
+      - { label: Pink teddy, price: 12 }
+  - name: Add-ons
+    type: multiple
+    choices:
+      - { label: Chocolates, price: 10 }
 ---
 
 Add a touch of elegance and a memorable statement to your event with our custom balloon centrepieces! Beautifully designed to complement your celebration, these eye-catching arrangements bring colour, personality, and a special touch to any table.

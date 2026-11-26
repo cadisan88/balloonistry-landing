@@ -1,0 +1,59 @@
+---
+/**
+ * Visible breadcrumbs. Pass the same crumbs as the JSON-LD (lib/seo.ts breadcrumbJsonLd).
+ * The last crumb is the current page.
+ */
+import type { Crumb } from '../lib/seo';
+
+interface Props {
+  crumbs: Crumb[];
+}
+
+const { crumbs } = Astro.props;
+---
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    {crumbs.map((crumb, index) => (
+      <li>
+        {index === crumbs.length - 1 ? (
+          <span aria-current="page">{crumb.name}</span>
+        ) : (
+          <a class="link-draw" href={crumb.path}>
+            {crumb.name}
+          </a>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-small);
+    font-weight: 700;
+    list-style: none;
+  }
+
+  .breadcrumbs li {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* A slash between the crumbs (decorative: the list already says the order) */
+  .breadcrumbs li + li::before {
+    content: '/';
+    margin-inline: var(--space-2);
+    color: var(--color-border-strong);
+  }
+
+  .breadcrumbs [aria-current='page'] {
+    color: var(--color-ink);
+  }
+</style>

@@ -1,0 +1,268 @@
+---
+/**
+ * "Client love" carousel: one review at a time, with prev/next arrows beside it, dots and a Pause/Play icon button.
+ * Timing comes from src/config/ui.ts. Behaviour is in src/scripts/carousel.ts.
+ * Without JavaScript every review is shown in a list. With one review there are no controls.
+ */
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import Testimonial from './Testimonial.astro';
+import { TESTIMONIAL_AUTOPLAY_MS } from '../config/ui';
+
+interface Props {
+  testimonials: CollectionEntry<'testimonials'>[];
+  /** Id of the heading that names the section. */
+  labelledby: string;
+}
+
+const { testimonials, labelledby } = Astro.props;
+const count = testimonials.length;
+const multiple = count > 1;
+---
+
+{count > 0 && (
+  <section
+    class="carousel"
+    aria-roledescription="carousel"
+    aria-labelledby={labelledby}
+    data-carousel
+    data-autoplay-ms={multiple ? TESTIMONIAL_AUTOPLAY_MS : undefined}
+  >
+    {multiple && (
+      <button
+        class="carousel__btn carousel__prev"
+        type="button"
+        data-carousel-prev
+        aria-label="Previous review"
+      >
+        <Icon name="chevron-left" size={22} />
+      </button>
+    )}
+
+    <div class="carousel__slides" data-carousel-slides aria-live="off">
+      {testimonials.map((testimonial, index) => (
+        <div
+          class:list={['carousel__slide', { 'is-active': index === 0 }]}
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${index + 1} of ${count}`}
+          data-carousel-slide
+        >
+          <Testimonial testimonial={testimonial} />
+        </div>
+      ))}
+    </div>
+
+    {multiple && (
+      <button
+        class="carousel__btn carousel__next"
+        type="button"
+        data-carousel-next
+        aria-label="Next review"
+      >
+        <Icon name="chevron-right" size={22} />
+      </button>
+    )}
+
+    {multiple && (
+      <div class="carousel__dots">
+        {testimonials.map((_, index) => (
+          <button
+            class="carousel__dot"
+            type="button"
+            data-carousel-dot
+            aria-label={`Show review ${index + 1} of ${count}`}
+            aria-current={index === 0 ? 'true' : undefined}
+          />
+        ))}
+      </div>
+    )}
+
+    {multiple && (
+      <button
+        class="carousel__pause"
+        type="button"
+        data-carousel-toggle
+        data-state="playing"
+        aria-label="Pause automatic reviews"
+      >
+        <Icon name="pause" size={20} class="carousel__pause-icon" />
+        <Icon name="play" size={20} class="carousel__play-icon" />
+      </button>
+    )}
+  </section>
+)}
+
+<script>
+  import { initCarousels } from '../scripts/carousel';
+
+  initCarousels();
+</script>
+
+<style>
+  .carousel {
+    max-width: 64rem;
+    margin-inline: auto;
+  }
+
+  /* No JavaScript: the reviews are a plain list, one under the other */
+  .carousel__slides {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .carousel__prev,
+  .carousel__next,
+  .carousel__dots,
+  .carousel__pause {
+    display: none;
+  }
+
+  /*
+   * With JavaScript the carousel is a grid. From 600px the arrows sit beside the slides, so they
+   * never cover the photo or the text. On phones there is no room at the sides: the arrows go
+   * into the row of dots and the pause button gets a row at the bottom right.
+   */
+  :global(.js) .carousel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'slides slides slides'
+      'prev dots next'
+      'pause pause pause';
+    align-items: center;
+    row-gap: var(--space-3);
+  }
+
+  :global(.js) .carousel__slides {
+    grid-area: slides;
+    gap: 0;
+  }
+
+  :global(.js) .carousel__prev {
+    grid-area: prev;
+    display: inline-flex;
+  }
+
+  :global(.js) .carousel__next {
+    grid-area: next;
+    display: inline-flex;
+  }
+
+  :global(.js) .carousel__dots {
+    grid-area: dots;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.js) .carousel__pause {
+    grid-area: pause;
+    display: inline-flex;
+    justify-self: end;
+  }
+
+  :global(.js) .carousel__pause[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 600px) {
+    :global(.js) .carousel {
+      column-gap: var(--space-4);
+      grid-template-areas:
+        'prev slides next'
+        '. dots pause';
+    }
+  }
+
+  /* The slides share one cell and cross-fade */
+  :global(.js) .carousel__slide {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    translate: var(--space-6) 0;
+    transition:
+      opacity var(--duration-slide) var(--ease),
+      translate var(--duration-slide) var(--ease),
+      visibility 0s linear var(--duration-slide);
+  }
+
+  :global(.js) .carousel__slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    transition-delay: 0s;
+  }
+
+  .carousel__btn,
+  .carousel__pause {
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--duration-hover) var(--ease);
+  }
+
+  /* The pause bars while it plays, the play triangle while it is paused */
+  .carousel__pause :global(.carousel__play-icon),
+  .carousel__pause[data-state='paused'] :global(.carousel__pause-icon) {
+    display: none;
+  }
+
+  .carousel__pause[data-state='paused'] :global(.carousel__play-icon) {
+    display: block;
+  }
+
+  .carousel__btn:hover,
+  .carousel__pause:hover {
+    background: var(--color-lavender-soft);
+  }
+
+  /* The dot is small to look at but 44px to tap */
+  .carousel__dot {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .carousel__dot::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--color-crimson);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    translate: -50% -50%;
+    transition: background-color var(--duration-hover) var(--ease);
+  }
+
+  .carousel__dot[aria-current='true']::before {
+    background: var(--color-crimson);
+  }
+
+  .carousel__dot:focus-visible,
+  .carousel__btn:focus-visible,
+  .carousel__pause:focus-visible {
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .carousel__slide {
+      transition: none;
+      translate: 0 0;
+    }
+  }
+</style>

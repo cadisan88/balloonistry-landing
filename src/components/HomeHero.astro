@@ -2,10 +2,11 @@
 import { Picture } from 'astro:assets';
 import Icon, { type IconName } from './Icon.astro';
 import Sparkles from './Sparkles.astro';
+import Squiggle from './Squiggle.astro';
 import heroImage from '../assets/brand/hero-talk-30.jpg';
 import { site } from '../config/site';
 
-const badges: { icon: IconName; label: string }[] = [
+const facts: { icon: IconName; label: string }[] = [
   { icon: 'heart-handshake', label: 'Handmade locally' },
   { icon: 'truck', label: 'Pickup & delivery' },
   { icon: 'palette', label: 'Custom colours' },
@@ -13,40 +14,47 @@ const badges: { icon: IconName; label: string }[] = [
 
 // Floating balloons around the arch (decorative)
 const balloons = ['crimson', 'turquoise', 'orange'] as const;
+
+// The tagline with its last word underlined by the hand-drawn squiggle
+const match = /^(.*\s)(\S+?)([.!?]*)$/.exec(site.tagline);
+const [lead, word, end] = match ? [match[1], match[2], match[3]] : [site.tagline, '', ''];
 ---
 
 <section class="hero band band--cream" aria-labelledby="hero-title">
   <div class="container hero__grid">
     <div class="hero__text">
-      <h1 id="hero-title">{site.tagline}</h1>
-      <p class="hero__lead">
+      <h1 class="hero__kicker enter">
+        Custom Balloon Gifts &amp; Event Decor | Kitchener, Waterloo, Cambridge
+      </h1>
+      <h2 id="hero-title" class="hero__title enter enter-d1">
+        {lead}
+        {word ? <Squiggle>{word}</Squiggle> : null}
+        {end}
+      </h2>
+      <p class="hero__lead enter enter-d2">
         Welcome to Balloonistry, where every balloon tells a story. Explore our collection of custom
         bobo balloon gifts, helium balloons, surprises, and more, perfect for all occasions.
       </p>
-      <div class="btn-row">
+      <div class="btn-row enter enter-d3">
         <a class="btn btn-primary" href="/shop/">
-          Shop balloons
+          Browse balloons
         </a>
-        <a class="btn btn-ghost" href="/events/">
-          Plan your event
+        <a class="btn btn-secondary" href="/events/">
+          Plan an event
         </a>
       </div>
-      <ul class="hero__badges">
-        <li>
-          <Icon name="map-pin" size={20} />
-          Kitchener-Waterloo, Ontario
-        </li>
-        {badges.map((badge) => (
+      <ul class="hero__facts enter enter-d4">
+        {facts.map((fact) => (
           <li>
-            <Icon name={badge.icon} size={20} />
-            {badge.label}
+            <Icon name={fact.icon} size={20} />
+            {fact.label}
           </li>
         ))}
       </ul>
     </div>
 
     <div class="hero__frame">
-      <div class="hero__media zoom-out">
+      <div class="hero__media enter-scale enter-d2">
         <Picture
           src={heroImage}
           alt="Red, blush and white balloon arch around a sign that reads Talk Thirty to Me"
@@ -72,10 +80,15 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
 
 <style>
   .hero {
-    /* The balloons may float past the edge on phones: never scroll sideways */
+    /* The balloons float past the frame on phones: never scroll sideways */
     overflow-x: clip;
-    padding-top: calc(var(--header-height) + var(--space-7));
-    padding-bottom: var(--section-pad);
+    padding-block: var(--space-7) calc(var(--section-pad) + var(--fringe-tooth));
+  }
+
+  @media (min-width: 860px) {
+    .hero {
+      padding-top: var(--space-8);
+    }
   }
 
   .hero__grid {
@@ -86,28 +99,47 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
 
   @media (min-width: 860px) {
     .hero__grid {
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+      gap: var(--space-7);
     }
   }
 
-  /* ----- Text: a big, tight italic headline, left aligned ----- */
+  /* ----- Text: a huge, tight italic headline, left aligned ----- */
 
-  .hero__text h1 {
+  /* The page's h1: a small, prominent sentence above the big tagline */
+  .hero__kicker {
+    max-width: 36ch;
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  @media (min-width: 860px) {
+    .hero__kicker {
+      font-size: 1.125rem;
+    }
+  }
+
+  .hero__title {
     max-width: 11ch;
     margin-bottom: var(--space-6);
     font-size: var(--text-display-1);
-    font-style: italic;
     line-height: 0.98;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
   }
 
   .hero__lead {
     max-width: 46ch;
     margin-bottom: var(--space-6);
-    font-size: 1.1875rem;
+    font-size: var(--text-lead);
   }
 
-  .hero__badges {
+  .hero__facts {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3) var(--space-5);
@@ -118,13 +150,13 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
     font-weight: 700;
   }
 
-  .hero__badges li {
+  .hero__facts li {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
   }
 
-  .hero__badges :global(.icon) {
+  .hero__facts :global(.icon) {
     color: var(--color-crimson-deep);
   }
 
@@ -148,10 +180,12 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
 
   .hero__media {
     position: relative;
+    z-index: 1;
     aspect-ratio: 4 / 5;
+    overflow: hidden;
     border-radius: var(--radius-arch);
     background: var(--color-lavender-soft);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
   }
 
   .hero__media :global(img) {
@@ -162,6 +196,7 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
 
   .hero__frame :global(.hero__sparkles) {
     position: absolute;
+    z-index: 2;
     top: 6%;
     left: -2.25rem;
     width: 3.5rem;
@@ -173,6 +208,7 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
   .hero__balloons {
     position: absolute;
     inset: 0;
+    z-index: 2;
     pointer-events: none;
   }
 
@@ -279,6 +315,7 @@ const balloons = ['crimson', 'turquoise', 'orange'] as const;
     }
   }
 
+  /* No pop, bob or float: the balloons just stand there */
   @media (prefers-reduced-motion: reduce) {
     .hero__balloon,
     .hero__balloon-body {

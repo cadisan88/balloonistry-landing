@@ -2,7 +2,8 @@
  * Loads the collections and applies the display rules from catalog.ts.
  * Pages use these helpers and never filter products or categories themselves.
  */
-import { getCollection, type CollectionEntry } from 'astro:content';
+import type { ImageMetadata } from 'astro';
+import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import * as catalog from './catalog';
 
 export type Product = CollectionEntry<'products'>;
@@ -52,4 +53,31 @@ export async function getCategoriesOf(product: Product): Promise<Category[]> {
   const categories = await getCollection('categories');
   const ids = catalog.visibleCategoryIdsOf(product, categories);
   return ids.flatMap((id) => categories.find((category) => category.id === id) ?? []);
+}
+
+/** Shipping and returns text shown on every product page. */
+export async function getProductInfo(): Promise<{ shipping: string; returns: string }> {
+  const entry = await getEntry('productInfo', 'default');
+  return { shipping: entry?.data.shipping ?? '', returns: entry?.data.returns ?? '' };
+}
+
+/** One photo of the Events or Corporate gallery. */
+export interface GalleryPhoto {
+  image: ImageMetadata;
+  /** Describes what the photo shows. */
+  alt: string;
+  /** Optional crop for the masonry gallery page: width divided by height. Default: the original. */
+  ratio?: number;
+}
+
+/** Event decor photos, in the order of src/content/events-gallery.json. */
+export async function getEventsGallery(): Promise<GalleryPhoto[]> {
+  const entries = await getCollection('eventsGallery');
+  return entries.map(({ data }) => data);
+}
+
+/** Corporate decor photos, in the order of src/content/corporate-gallery.json. */
+export async function getCorporateGallery(): Promise<GalleryPhoto[]> {
+  const entries = await getCollection('corporateGallery');
+  return entries.map(({ data }) => data);
 }

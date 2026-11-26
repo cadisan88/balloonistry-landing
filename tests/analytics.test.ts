@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createAnalytics } from '../src/lib/analytics';
-import { eventFromDataset, pageTypeOf, productViewFromDataset } from '../src/lib/tracking';
+import {
+  eventFromDataset,
+  pageTypeOf,
+  productViewFromDataset,
+  quoteSentFromDataset,
+  sortChangedEvent,
+} from '../src/lib/tracking';
 
 describe('createAnalytics', () => {
   it('does nothing without a key (the default)', () => {
@@ -110,6 +116,81 @@ describe('eventFromDataset', () => {
       eventFromDataset({ categoryLink: '', category: 'x', location: 'footer' }),
     ).toBeUndefined();
     expect(eventFromDataset({})).toBeUndefined();
+  });
+});
+
+describe('quote and media events', () => {
+  it('reads quote_item_added', () => {
+    expect(
+      eventFromDataset({
+        quoteAdd: '',
+        product: 'balloon-centerpiece',
+        qty: '2',
+        options: '2',
+        unitPrice: '75',
+        quoteLocation: 'product_page',
+      }),
+    ).toEqual({
+      event: 'quote_item_added',
+      properties: {
+        product: 'balloon-centerpiece',
+        qty: 2,
+        options: 2,
+        unit_price: 75,
+        location: 'product_page',
+      },
+    });
+    expect(
+      eventFromDataset({ quoteAdd: '', product: 'x', qty: '0', quoteLocation: 'product_card' }),
+    ).toBeUndefined();
+    expect(
+      eventFromDataset({ quoteAdd: '', product: 'x', qty: '1', quoteLocation: 'moon' }),
+    ).toBeUndefined();
+  });
+
+  it('reads quote_list_opened and media_opened', () => {
+    expect(eventFromDataset({ quoteOpen: '', items: '3' })).toEqual({
+      event: 'quote_list_opened',
+      properties: { items: 3 },
+    });
+    expect(
+      eventFromDataset({ mediaOpen: '', product: 'x', mediaKind: 'video', mediaLocation: 'home' }),
+    ).toEqual({
+      event: 'media_opened',
+      properties: { product: 'x', kind: 'video', location: 'home' },
+    });
+    expect(
+      eventFromDataset({ mediaOpen: '', product: 'x', mediaKind: 'gif', mediaLocation: 'home' }),
+    ).toBeUndefined();
+  });
+
+  it('reads quote_sent from a drawer channel button', () => {
+    expect(
+      quoteSentFromDataset({ quoteSend: '', channel: 'sms', items: '2', estimatedTotal: '150' }),
+    ).toEqual({
+      event: 'quote_sent',
+      properties: { channel: 'sms', items: 2, estimated_total: 150 },
+    });
+    expect(quoteSentFromDataset({ quoteSend: '', channel: 'form', items: '2' })).toBeUndefined();
+    expect(quoteSentFromDataset({ channel: 'sms', items: '2' })).toBeUndefined();
+  });
+
+  it('reads sort_changed', () => {
+    expect(sortChangedEvent('price-asc', 'shop')).toEqual({
+      event: 'sort_changed',
+      properties: { sort: 'price-asc', location: 'shop' },
+    });
+    expect(sortChangedEvent('cheapest', 'shop')).toBeUndefined();
+    expect(sortChangedEvent('newest', 'home')).toBeUndefined();
+  });
+
+  it('accepts the new channel locations and the corporate page type', () => {
+    expect(
+      eventFromDataset({ channel: 'whatsapp', channelLocation: 'quote_drawer' }),
+    ).toBeDefined();
+    expect(eventFromDataset({ channel: 'instagram', channelLocation: 'corporate' })).toBeDefined();
+    expect(eventFromDataset({ channel: 'messenger', channelLocation: 'footer' })).toBeUndefined();
+    expect(pageTypeOf('corporate')).toBe('corporate');
   });
 });
 

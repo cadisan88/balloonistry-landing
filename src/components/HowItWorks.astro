@@ -1,0 +1,92 @@
+---
+/**
+ * Numbered steps in big cards. Used on the home, Events and Corporate pages.
+ * A step body is optional.
+ */
+interface Step {
+  title: string;
+  text?: string;
+}
+
+interface Props {
+  steps: Step[];
+}
+
+const { steps } = Astro.props;
+---
+
+<ol class="how-steps">
+  {steps.map((step, index) => (
+    <li class="how-steps__card">
+      <span class="how-steps__number" aria-hidden="true">
+        {index + 1}
+      </span>
+      <h3>{step.title}</h3>
+      {step.text && <p>{step.text}</p>}
+    </li>
+  ))}
+</ol>
+
+<style>
+  .how-steps {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 860px) {
+    .how-steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-6);
+    }
+  }
+
+  .how-steps__card {
+    position: relative;
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* A big number in a round sticker that sits on the card's corner */
+  .how-steps__number {
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: var(--space-4);
+    border-radius: var(--radius-pill);
+    background: var(--color-orange);
+    box-shadow:
+      0 0 0 3px var(--color-white),
+      var(--shadow-sm);
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-style: italic;
+    font-weight: 600;
+    line-height: 1;
+    rotate: -4deg;
+  }
+
+  .how-steps__card:nth-child(2) .how-steps__number {
+    background: var(--color-turquoise);
+    rotate: 3deg;
+  }
+
+  .how-steps__card:nth-child(3) .how-steps__number {
+    background: var(--color-lavender);
+  }
+
+  .how-steps__card h3 {
+    margin-bottom: var(--space-2);
+    font-size: 1.5rem;
+    line-height: 1.15;
+  }
+
+  .how-steps__card p {
+    margin: 0;
+  }
+</style>

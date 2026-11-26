@@ -1,0 +1,397 @@
+---
+/**
+ * The product media carousel: photos and videos on a swipeable stage (native scroll-snap),
+ * arrows, thumbnails and a desktop hover magnifier. Behaviour: src/scripts/product-media.ts.
+ * Every photo and video opens the lightbox (mount a Lightbox on the page).
+ */
+import type { ImageMetadata } from 'astro';
+import { Picture, getImage } from 'astro:assets';
+import Icon from './Icon.astro';
+
+interface Props {
+  productId: string;
+  /** Describes the product. Photo 2 and later add "photo N". */
+  alt: string;
+  images: ImageMetadata[];
+  videos?: { src: string; poster?: ImageMetadata | undefined }[];
+}
+
+const { productId, alt, images, videos = [] } = Astro.props;
+
+// The lightbox shows a larger image than the stage
+const photos = await Promise.all(
+  images.map(async (image, index) => ({
+    image,
+    alt: index === 0 ? alt : `${alt}, photo ${index + 1}`,
+    full: (await getImage({ src: image, width: 1600, format: 'webp' })).src,
+  })),
+);
+const clips = await Promise.all(
+  videos.map(async (video, index) => ({
+    src: video.src,
+    poster: video.poster,
+    posterUrl: video.poster
+      ? (await getImage({ src: video.poster, width: 1200, format: 'webp' })).src
+      : undefined,
+    alt: `${alt}, video ${index + 1}`,
+  })),
+);
+const total = photos.length + clips.length;
+
+// Attributes shared by every opener of the lightbox, and the analytics for each
+const opener = (index: number, kind: 'image' | 'video') => ({
+  'data-lightbox-group': `product-${productId}`,
+  'data-lightbox-index': String(index),
+  'data-media-open': '',
+  'data-product': productId,
+  'data-media-kind': kind,
+  'data-media-location': 'product_page',
+});
+---
+
+<div class="media" data-media>
+  <div
+    class="media__stage"
+    tabindex="0"
+    role="region"
+    aria-roledescription="carousel"
+    aria-label="Product photos and videos"
+    data-media-stage
+  >
+    <ul class="media__track">
+      {photos.map((photo, index) => (
+        <li
+          class="media__slide"
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${index + 1} of ${total}`}
+          data-media-slide
+        >
+          <button
+            class="media__open"
+            type="button"
+            aria-label={`View larger: ${photo.alt}`}
+            data-full={photo.full}
+            data-alt={photo.alt}
+            data-media-zoom
+            {...opener(index, 'image')}
+          >
+            <Picture
+              src={photo.image}
+              alt=""
+              formats={['avif', 'webp']}
+              widths={[480, 800, 1200]}
+              sizes="(min-width: 1180px) 560px, (min-width: 860px) 48vw, 100vw"
+              width={1200}
+              height={1200}
+              /* The first photo is the main image of the page: load it first. */
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : undefined}
+            />
+          </button>
+        </li>
+      ))}
+      {clips.map((clip, index) => (
+        <li
+          class="media__slide"
+          role="group"
+          aria-roledescription="slide"
+          aria-label={`${photos.length + index + 1} of ${total}`}
+          data-media-slide
+        >
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            poster={clip.posterUrl}
+            src={clip.src}
+            aria-label={clip.alt}
+          ></video>
+          <button
+            class="media__enlarge"
+            type="button"
+            aria-label={`View larger: ${clip.alt}`}
+            data-video={clip.src}
+            data-poster={clip.posterUrl}
+            data-alt={clip.alt}
+            {...opener(photos.length + index, 'video')}
+          >
+            <Icon name="maximize-2" size={20} />
+          </button>
+        </li>
+      ))}
+    </ul>
+
+    {total > 1 && (
+      <>
+        <button class="media__arrow media__prev" type="button" data-media-prev>
+          <Icon name="chevron-left" size={26} />
+          <span class="visually-hidden">Previous photo</span>
+        </button>
+        <button class="media__arrow media__next" type="button" data-media-next>
+          <Icon name="chevron-right" size={26} />
+          <span class="visually-hidden">Next photo</span>
+        </button>
+      </>
+    )}
+  </div>
+
+  {total > 1 && (
+    <ul class="media__thumbs">
+      {photos.map((photo, index) => (
+        <li>
+          <button
+            class="media__thumb"
+            type="button"
+            aria-label={`Show photo ${index + 1} of ${total}`}
+            aria-current={index === 0 ? 'true' : undefined}
+            data-media-thumb
+          >
+            <Picture
+              src={photo.image}
+              alt=""
+              formats={['avif', 'webp']}
+              widths={[96, 192]}
+              sizes="96px"
+              width={192}
+              height={192}
+              loading="lazy"
+            />
+          </button>
+        </li>
+      ))}
+      {clips.map((clip, index) => (
+        <li>
+          <button
+            class="media__thumb media__thumb--video"
+            type="button"
+            aria-label={`Show video ${index + 1}`}
+            data-media-thumb
+          >
+            {clip.poster && (
+              <Picture
+                src={clip.poster}
+                alt=""
+                formats={['avif', 'webp']}
+                widths={[96, 192]}
+                sizes="96px"
+                width={192}
+                height={192}
+                loading="lazy"
+              />
+            )}
+            <Icon name="play" size={22} class="media__play" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+<script>
+  import { initProductMedia } from '../scripts/product-media';
+
+  initProductMedia();
+</script>
+
+<style>
+  .media {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .media__stage {
+    position: relative;
+    border-radius: var(--radius);
+    background: var(--color-lavender-soft);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .media__stage:focus-visible {
+    outline-offset: 3px;
+  }
+
+  /* Swipe and scroll: native horizontal scroll-snap, no library */
+  .media__track {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .media__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .media__slide {
+    position: relative;
+    flex: 0 0 100%;
+    aspect-ratio: 1;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    overflow: hidden;
+  }
+
+  .media__slide :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .media__slide :global(img),
+  .media__slide video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .media__slide video {
+    background: var(--color-ink);
+    object-fit: contain;
+  }
+
+  /* The whole photo is the button that opens the lightbox */
+  .media__open {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+  }
+
+  .media__open:focus-visible {
+    outline-offset: -5px;
+  }
+
+  .media__open :global(img) {
+    transition: transform var(--duration-media-zoom) var(--ease);
+  }
+
+  /* Desktop magnifier: the script sets transform-origin to follow the pointer */
+  .media__slide:global(.is-magnified) .media__open :global(img) {
+    transform: scale(2);
+  }
+
+  .media__enlarge,
+  .media__arrow {
+    position: absolute;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: background-color var(--duration-hover) var(--ease);
+  }
+
+  .media__enlarge:hover,
+  .media__arrow:hover:not(:disabled) {
+    background: var(--color-orange);
+  }
+
+  .media__enlarge {
+    top: var(--space-3);
+    right: var(--space-3);
+  }
+
+  .media__arrow {
+    top: 50%;
+    translate: 0 -50%;
+  }
+
+  .media__arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .media__prev {
+    left: var(--space-3);
+  }
+
+  .media__next {
+    right: var(--space-3);
+  }
+
+  .media__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .media__thumb {
+    position: relative;
+    display: block;
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--color-lavender-soft);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color var(--duration-hover) var(--ease);
+  }
+
+  @media (min-width: 600px) {
+    .media__thumb {
+      width: 88px;
+      height: 88px;
+    }
+  }
+
+  .media__thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .media__thumb:hover {
+    border-color: var(--color-border-strong);
+  }
+
+  .media__thumb[aria-current='true'] {
+    border-color: var(--color-crimson-deep);
+  }
+
+  /* A play badge on the video thumbnail */
+  .media__thumb :global(.media__play) {
+    position: absolute;
+    inset: 0;
+    width: 28px;
+    height: 28px;
+    margin: auto;
+    padding: 5px;
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+  }
+
+  /* Without JavaScript: swipe or scroll the stage. Arrows and thumbnails need the script. */
+  :global(.no-js) .media__arrow,
+  :global(.no-js) .media__thumbs {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .media__open :global(img) {
+      transition: none;
+    }
+  }
+</style>

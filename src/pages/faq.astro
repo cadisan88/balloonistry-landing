@@ -35,17 +35,41 @@ const structured = faqJsonLd(
   pageType="faq"
   jsonLd={structured ? [structured] : []}
 >
-  <section class="container faq">
-    <header class="faq__header">
+  <section class="container container--narrow faq">
+    <header class="page-head">
       <p class="eyebrow">FAQ</p>
-      <h1>Frequently asked questions</h1>
+      <div class="faq__top">
+        <h1>Frequently asked questions</h1>
+
+        <!-- Needs JavaScript: hidden without it, and then every question shows -->
+        <div class="faq__search" role="search">
+          <label class="faq__search-label" for="faq-search">
+            Search questions
+          </label>
+          <input
+            class="faq__search-input"
+            id="faq-search"
+            type="search"
+            autocomplete="off"
+            data-faq-input
+          />
+          <p class="visually-hidden" role="status" aria-live="polite" data-faq-status></p>
+        </div>
+      </div>
     </header>
 
+    <div class="faq__empty" data-faq-empty hidden>
+      <p class="faq__empty-message" data-faq-empty-message></p>
+      <button class="faq__clear" type="button" data-faq-clear>
+        Clear search
+      </button>
+    </div>
+
     {groups.map(({ group, title, items }) => (
-      <section class="faq__group" aria-labelledby={`faq-${group}`}>
+      <section class="faq__group" aria-labelledby={`faq-${group}`} data-faq-group>
         <h2 id={`faq-${group}`}>{title}</h2>
         {items.map(({ entry, Content }) => (
-          <details class="faq__item">
+          <details class="faq__item" data-faq-item>
             <summary>{entry.data.question}</summary>
             <div class="faq__answer prose">
               <Content />
@@ -63,31 +87,123 @@ const structured = faqJsonLd(
   </section>
 </BaseLayout>
 
+<script>
+  import { initFaqSearch } from '../scripts/faq-search';
+
+  initFaqSearch();
+</script>
+
 <style>
   .faq {
-    max-width: 52rem;
     padding-bottom: var(--section-pad);
   }
 
-  .faq__header {
-    margin-bottom: var(--space-7);
+  /* Phones: the heading, then the search, stacked. From 860px they share one row. */
+  .faq__top {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .faq__top h1 {
+    margin-bottom: 0;
+  }
+
+  .faq__search {
+    display: none;
+  }
+
+  :global(.js) .faq__search {
+    display: block;
+  }
+
+  .faq__search-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 700;
+  }
+
+  .faq__search-input {
+    width: 100%;
+    min-height: 48px;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-pill);
+    background: var(--color-white);
+    color: var(--color-ink);
+    font: inherit;
+  }
+
+  @media (min-width: 860px) {
+    .faq__top {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-6);
+      align-items: center;
+    }
+
+    .faq__search-input {
+      width: 18rem;
+    }
+  }
+
+  .faq__empty {
+    margin-bottom: var(--space-6);
+    padding: var(--space-5);
+    border-radius: var(--radius);
+    background: var(--color-white);
+  }
+
+  .faq__empty p {
+    margin: 0;
+  }
+
+  .faq__empty[hidden],
+  .faq__group[hidden],
+  .faq__item[hidden] {
+    display: none;
+  }
+
+  /* The button sits on its own line under the message */
+  .faq__clear {
+    display: block;
+    min-height: 44px;
+    margin-top: var(--space-2);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-crimson-deep);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
   }
 
   .faq__group + .faq__group {
-    margin-top: var(--space-7);
+    margin-top: var(--space-8);
   }
 
   .faq__group h2 {
-    font-size: var(--text-h3);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-h2);
   }
 
+  /* Each question is a crisp white card */
   .faq__item {
-    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-3);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--duration-hover) var(--ease);
+  }
+
+  .faq__item[open] {
+    border-color: var(--color-ink);
   }
 
   .faq__item summary {
     position: relative;
-    padding: var(--space-4) var(--space-7) var(--space-4) 0;
+    padding: var(--space-4) var(--space-8) var(--space-4) var(--space-5);
+    border-radius: var(--radius);
     font-weight: 700;
     cursor: pointer;
     list-style: none;
@@ -102,9 +218,9 @@ const structured = faqJsonLd(
     content: '+';
     position: absolute;
     top: 50%;
-    right: var(--space-2);
+    right: var(--space-5);
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     line-height: 1;
     color: var(--color-crimson-deep);
     transform: translateY(-50%);
@@ -115,17 +231,17 @@ const structured = faqJsonLd(
   }
 
   .faq__answer {
-    padding-bottom: var(--space-5);
+    padding: 0 var(--space-5) var(--space-5);
   }
 
   .faq__more {
     margin-top: var(--space-8);
     padding: var(--space-6) var(--space-5);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--color-lavender-soft);
   }
 
   .faq__more h2 {
-    font-size: var(--text-h3);
+    font-size: var(--text-h2);
   }
 </style>

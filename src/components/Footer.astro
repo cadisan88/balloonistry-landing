@@ -1,15 +1,28 @@
 ---
+import { Picture } from 'astro:assets';
+import Fringe from './Fringe.astro';
 import Icon from './Icon.astro';
 import { site } from '../config/site';
+import logo from '../assets/brand/logo-header.png';
 
 const { address } = site;
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer on-dark">
+  <Fringe top />
   <div class="container site-footer__grid">
     <div class="site-footer__brand">
-      <p class="site-footer__name">{site.name}</p>
+      <a class="site-footer__logo" href="/">
+        <Picture
+          src={logo}
+          alt={site.name}
+          height={64}
+          densities={[1, 2, 3]}
+          formats={['avif', 'webp']}
+          loading="lazy"
+        />
+      </a>
       <p class="site-footer__tagline">{site.tagline}</p>
       <ul class="site-footer__social">
         <li>
@@ -81,7 +94,8 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    padding-block: var(--space-8) var(--space-5);
+    position: relative;
+    padding-block: calc(var(--space-8) + var(--fringe-tooth)) var(--space-5);
     background: var(--color-ink);
     color: var(--color-white);
   }
@@ -112,12 +126,18 @@ const year = new Date().getFullYear();
     text-decoration: underline;
   }
 
-  .site-footer__name {
+  /* The logo links home. The padding gives the keyboard focus ring some room. */
+  .site-footer a.site-footer__logo {
+    display: inline-block;
     margin-bottom: var(--space-2);
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 600;
-    line-height: var(--leading-heading);
+    padding: var(--space-1);
+    border-radius: var(--radius-sm);
+  }
+
+  .site-footer__logo :global(img) {
+    display: block;
+    width: auto;
+    height: 64px;
   }
 
   .site-footer__tagline {

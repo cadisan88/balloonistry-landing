@@ -14,13 +14,23 @@ html {
   scroll-padding-top: calc(var(--header-height) + var(--space-4));
 }
 
+/* The menu, the quote drawer and the lightbox lock the page scroll while they are open.
+   The gutter stays, so the page does not jump when the scrollbar goes away. */
+html {
+  scrollbar-gutter: stable;
+}
+
+html.is-scroll-locked {
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--color-white);
+  background: var(--color-cream);
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: var(--text-body);
@@ -29,9 +39,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The header is fixed and opaque: content always starts below it */
 main {
   flex: 1;
+  padding-top: var(--header-height);
 }
+
+/* ---------- Type scale ---------- */
 
 h1,
 h2,
@@ -44,12 +58,21 @@ h4 {
   text-wrap: balance;
 }
 
+/* Big, confident, tight italic headlines */
+h1,
+h2 {
+  font-style: italic;
+  letter-spacing: var(--tracking-display);
+}
+
 h1 {
   font-size: var(--text-h1);
+  line-height: var(--leading-display);
 }
 
 h2 {
   font-size: var(--text-h2);
+  line-height: 1.08;
 }
 
 h3 {
@@ -59,6 +82,10 @@ h3 {
 p {
   margin: 0 0 var(--space-4);
   max-width: var(--measure);
+}
+
+.lead {
+  font-size: var(--text-lead);
 }
 
 ul,
@@ -79,6 +106,8 @@ img {
   height: auto;
 }
 
+/* ---------- Links ---------- */
+
 a {
   color: var(--color-crimson-deep);
   text-decoration-thickness: 0.08em;
@@ -87,6 +116,26 @@ a {
 
 a:hover {
   text-decoration-thickness: 0.14em;
+}
+
+/*
+ * Text links draw an underline on hover: a thin line rests under the text,
+ * a thicker one grows from the left. Used by .link-draw and Markdown text.
+ */
+.link-draw,
+.prose a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0 0.12em;
+  text-decoration-thickness: 0.06em;
+  transition: background-size var(--duration-hover) var(--ease);
+}
+
+.link-draw:hover,
+.prose a:hover {
+  background-size: 100% 0.12em;
+  text-decoration-thickness: 0.06em;
 }
 
 button,
@@ -100,15 +149,16 @@ textarea {
 /* Focus ring on every interactive element */
 :focus-visible {
   outline: 3px solid var(--color-ink);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
-/* On dark sections the ring must stay visible */
-.on-dark :focus-visible {
+/* On the ink band and the footer the ring must stay visible */
+.on-dark :focus-visible,
+.band-dark :focus-visible {
   outline-color: var(--color-white);
 }
 
-/* ---------- Layout helpers ---------- */
+/* ---------- Layout ---------- */
 
 .container {
   width: 100%;
@@ -117,75 +167,60 @@ textarea {
   padding-inline: var(--gutter);
 }
 
+.container--narrow {
+  max-width: calc(var(--content-narrow) + 2 * var(--gutter));
+}
+
 .section {
   padding-block: var(--section-pad);
 }
 
-/* ---------- Coloured bands (home page) ---------- */
+/* ---------- Section grounds ---------- */
 
-/* A full-width coloured band */
+/* A full-width ground. Text on every ground is ink, except .band-dark (white). */
 .band {
   position: relative;
-  background: var(--band-color, var(--color-white));
-}
-
-/* A band with scalloped edges sits above its neighbours so the bumps show */
-.band.scallop-top,
-.band.scallop-bottom {
-  z-index: 1;
+  background: var(--band-color, var(--color-cream));
 }
 
 .band--cream {
   --band-color: var(--color-cream);
 }
 
+.band--white {
+  --band-color: var(--color-white);
+}
+
 .band--lavender-soft {
   --band-color: var(--color-lavender-soft);
 }
 
-/* Two cream sections in a row read as one page: no double padding between them */
-.band--cream + .band--cream {
-  padding-top: 0;
+.band--turquoise-soft {
+  --band-color: var(--color-turquoise-soft);
 }
 
-/*
- * Scalloped edges: a row of soft bumps in the band colour above (.scallop-top)
- * or below (.scallop-bottom) the band. The mask only uses shape, never colour.
- */
-.scallop-top::before,
-.scallop-bottom::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: var(--scallop-height);
-  background: var(--band-color, var(--color-white));
-  -webkit-mask-repeat: repeat-x;
-  mask-repeat: repeat-x;
-  -webkit-mask-size: var(--scallop-width) var(--scallop-height);
-  mask-size: var(--scallop-width) var(--scallop-height);
-  pointer-events: none;
+/* The one deep-ink band per page: white text, lavender eyebrows */
+.band-dark {
+  position: relative;
+  background: var(--color-ink);
+  color: var(--color-white);
 }
 
-.scallop-top::before {
-  bottom: calc(100% - 1px);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 18' preserveAspectRatio='none'%3E%3Cpath d='M0 18C8 0 48 0 56 18Z'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 18' preserveAspectRatio='none'%3E%3Cpath d='M0 18C8 0 48 0 56 18Z'/%3E%3C/svg%3E");
-  -webkit-mask-position: center bottom;
-  mask-position: center bottom;
+.band-dark a:not(.btn) {
+  color: var(--color-white);
 }
 
-.scallop-bottom::after {
-  top: calc(100% - 1px);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 18' preserveAspectRatio='none'%3E%3Cpath d='M0 0C8 18 48 18 56 0Z'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 18' preserveAspectRatio='none'%3E%3Cpath d='M0 0C8 18 48 18 56 0Z'/%3E%3C/svg%3E");
-  -webkit-mask-position: center top;
-  mask-position: center top;
+.band-dark .eyebrow {
+  color: var(--color-lavender);
+}
+
+.band-dark p {
+  color: var(--color-white);
 }
 
 /* ---------- Helpers ---------- */
 
-/* Pages without a hero start below the fixed header */
+/* Pages without a hero get extra air under the header */
 .page-top {
   padding-top: calc(var(--header-height) + var(--space-7));
 }
@@ -220,7 +255,7 @@ textarea {
   position: fixed;
   top: var(--space-2);
   left: var(--space-2);
-  z-index: calc(var(--z-header) + 1);
+  z-index: calc(var(--z-menu) + 1);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   background: var(--color-ink);
@@ -242,6 +277,8 @@ textarea {
 .prose h2 {
   margin-top: var(--space-7);
   font-size: var(--text-h3);
+  font-style: normal;
+  letter-spacing: 0;
 }
 
 .prose h3 {
@@ -283,21 +320,21 @@ textarea {
     background-color var(--duration-hover) var(--ease),
     color var(--duration-hover) var(--ease),
     box-shadow var(--duration-hover) var(--ease),
-    transform var(--duration-spring) var(--ease-spring);
+    transform var(--duration-hover) var(--ease);
 }
 
-/* Buttons gently lift and "inflate" on hover, and squish when pressed */
 .btn:hover {
-  transform: translateY(-3px) scale(1.04);
+  transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
 
 .btn:active {
-  transform: translateY(0) scale(0.97);
+  transform: translateY(0) scale(0.98);
   box-shadow: var(--shadow-sm);
-  transition-duration: 0.1s;
+  transition-duration: 0.08s;
 }
 
+/* Primary: orange fill, ink text (ink on orange 7.8) */
 .btn-primary {
   background: var(--color-orange);
   color: var(--color-ink);
@@ -307,24 +344,60 @@ textarea {
   background: var(--color-orange-hover);
 }
 
-.btn-secondary {
-  background: var(--color-turquoise);
-  color: var(--color-ink);
-}
-
-.btn-secondary:hover {
-  background: var(--color-turquoise-hover);
-}
-
+/* Secondary: white with a 2px ink border. .btn-ghost is the same look (older markup). */
+.btn-secondary,
 .btn-ghost {
-  background: transparent;
   border-color: var(--color-ink);
+  background: var(--color-white);
   color: var(--color-ink);
 }
 
+.btn-secondary:hover,
 .btn-ghost:hover {
-  background: var(--color-ink);
-  color: var(--color-white);
+  background: var(--color-white);
+}
+
+/* Channel buttons (WhatsApp, Instagram, Text us, Call): secondary look, icon in its own colour */
+.btn-channel {
+  border-color: var(--color-ink);
+  background: var(--color-white);
+  color: var(--color-ink);
+}
+
+.btn-channel .icon {
+  width: 24px;
+  height: 24px;
+  color: var(--channel-color, var(--color-ink));
+}
+
+.btn-channel--whatsapp {
+  --channel-color: var(--color-whatsapp);
+}
+
+.btn-channel--instagram {
+  --channel-color: var(--color-instagram);
+}
+
+.btn-channel--sms {
+  --channel-color: var(--color-crimson-deep);
+}
+
+/* WhatsApp is the primary channel */
+.btn-channel--primary {
+  background: var(--color-orange);
+}
+
+.btn-channel--primary:hover {
+  background: var(--color-orange-hover);
+}
+
+/* The brand green is too weak on orange: the icon turns ink */
+.btn-channel--primary .icon {
+  color: var(--color-ink);
+}
+
+.btn-channel--phone {
+  --channel-color: var(--color-ink);
 }
 
 .btn[disabled],
@@ -341,25 +414,87 @@ textarea {
   gap: var(--space-3);
 }
 
-/* ---------- Tags and chips ---------- */
-
-.tag {
+/* Quantity stepper (product page and quote drawer): minus, number, plus. 44px targets. */
+.stepper {
   display: inline-flex;
   align-items: center;
+  border: 2px solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+}
+
+.stepper__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color var(--duration-hover) var(--ease);
+}
+
+.stepper__btn:hover:not(:disabled) {
+  background: var(--color-lavender-soft);
+}
+
+.stepper__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepper__input {
+  width: 3rem;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-weight: 800;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.stepper__input::-webkit-outer-spin-button,
+.stepper__input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+/* ---------- Tags, stickers and chips ---------- */
+
+/* A die-cut sticker: pill, 2px white outline, soft shadow, a fixed tilt (never animated) */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
+  background: var(--color-turquoise);
+  box-shadow:
+    0 0 0 2px var(--color-white),
+    var(--shadow-sm);
+  color: var(--color-ink);
   font-size: var(--text-small);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.4;
   white-space: nowrap;
+  rotate: var(--sticker-tilt, -3deg);
 }
 
-.tag-new {
-  background: var(--color-turquoise);
-  color: var(--color-ink);
+.sticker--orange {
+  background: var(--color-orange);
 }
 
-.tag-best-seller {
+.sticker--lavender {
+  background: var(--color-lavender);
+}
+
+.sticker--crimson {
   background: var(--color-crimson-deep);
   color: var(--color-white);
 }
@@ -392,7 +527,210 @@ textarea {
   color: var(--color-white);
 }
 
-/* ---------- Motion ---------- */
+/* ---------- Signature motifs ---------- */
+
+/*
+ * Pinata fringe: a band of narrow vertical stripes in the four brand colours,
+ * its lower edge cut into small teeth. It hangs over the section below (the negative
+ * margin pulls that section under the teeth). Decorative: use aria-hidden.
+ */
+.fringe {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: var(--fringe-height);
+  margin-bottom: calc(-1 * var(--fringe-tooth));
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-turquoise) 0 12px,
+    var(--color-lavender) 12px 24px,
+    var(--color-crimson) 24px 36px,
+    var(--color-orange) 36px 48px
+  );
+  -webkit-mask: conic-gradient(
+      from -45deg at bottom,
+      transparent,
+      black 1deg 89deg,
+      transparent 90deg
+    )
+    50% / calc(2 * var(--fringe-tooth)) 100%;
+  mask: conic-gradient(from -45deg at bottom, transparent, black 1deg 89deg, transparent 90deg)
+    50% / calc(2 * var(--fringe-tooth)) 100%;
+  pointer-events: none;
+}
+
+/* Hangs from the top edge of its (positioned) parent, over the previous section */
+.fringe--top {
+  position: absolute;
+  inset: auto 0 calc(100% - var(--fringe-tooth));
+  margin: 0;
+}
+
+/*
+ * Confetti: a decorative layer of small pieces. Place it inside a positioned parent.
+ * Each <i> sets --x, --y (position), --r (rotation), --c (colour), --d (delay), --s (scale).
+ * The pieces fall into place once on load. They never loop.
+ */
+.confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.confetti > i {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: 6px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--c, var(--color-crimson));
+  rotate: var(--r, 0deg);
+  scale: var(--s, 1);
+  animation: confetti-fall var(--duration-confetti) var(--ease) var(--d, 0ms) both;
+}
+
+.confetti > i[data-s='dot'] {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* A small hand-drawn arc, built from a border */
+.confetti > i[data-s='wave'] {
+  width: 18px;
+  height: 9px;
+  border-radius: 18px 18px 0 0;
+  border: 3px solid var(--c, var(--color-crimson));
+  border-bottom: 0;
+  background: none;
+}
+
+@keyframes confetti-fall {
+  from {
+    opacity: 0;
+    translate: 0 -40px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Hand-drawn wave under one word of a headline */
+.squiggle {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.squiggle::after {
+  content: '';
+  position: absolute;
+  right: -2%;
+  bottom: -0.14em;
+  left: -2%;
+  height: 0.26em;
+  background: var(--color-crimson);
+  -webkit-mask: var(--squiggle) repeat-x left center / auto 100%;
+  mask: var(--squiggle) repeat-x left center / auto 100%;
+  animation: squiggle-draw 0.8s var(--ease) 0.5s both;
+}
+
+@keyframes squiggle-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ---------- Hover layer ---------- */
+
+/* Linked cards lift 2px */
+.hover-lift {
+  transition:
+    transform var(--duration-hover) var(--ease),
+    box-shadow var(--duration-hover) var(--ease);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Card photos zoom 1.05 inside their frame */
+.hover-zoom {
+  overflow: hidden;
+}
+
+.hover-zoom img {
+  transition: transform 400ms var(--ease);
+}
+
+.hover-zoom:hover img,
+a:hover .hover-zoom img,
+a:focus-visible .hover-zoom img {
+  transform: scale(1.05);
+}
+
+/* ---------- Page entrance (once, on load) ---------- */
+
+.enter {
+  animation: enter-rise var(--duration-enter) var(--ease) var(--enter-delay, 0ms) both;
+}
+
+.enter-scale {
+  animation: enter-scale var(--duration-enter) var(--ease) var(--enter-delay, 0ms) both;
+}
+
+/* Stagger steps (inline style attributes are blocked by the CSP, so these are classes) */
+.enter-d1 {
+  --enter-delay: 80ms;
+}
+
+.enter-d2 {
+  --enter-delay: 200ms;
+}
+
+.enter-d3 {
+  --enter-delay: 300ms;
+}
+
+.enter-d4 {
+  --enter-delay: 400ms;
+}
+
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes enter-scale {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ---------- Scroll motion ---------- */
 
 /*
  * Image zoom-out (R9): the image goes from scale(1.15) to scale(1) when it enters the viewport.
@@ -411,7 +749,7 @@ textarea {
   transform: none;
 }
 
-/* Reveal: text blocks fade in and move up 24px */
+/* Reveal: section headings fade in and move up 24px */
 .js .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -435,19 +773,50 @@ textarea {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
 
+  /* No fall, slide, zoom or float: the final state shows right away */
+  .confetti > i,
+  .enter,
+  .enter-scale,
+  .squiggle::after {
+    animation: none;
+  }
+
   .btn:hover,
-  .btn:active {
+  .btn:active,
+  .hover-lift:hover,
+  .hover-zoom:hover img,
+  a:hover .hover-zoom img,
+  a:focus-visible .hover-zoom img {
     transform: none;
   }
 
-  /* No zoom and no reveal: everything is visible right away */
   .js .zoom-out img,
   .js .reveal {
     opacity: 1;
     transform: none;
     transition: none;
   }
+}
+
+/* ---------- Page heads and text pages (About, FAQ, Contact, policies, 404) ---------- */
+
+.page-head {
+  margin-bottom: var(--space-7);
+}
+
+.page-head h1 {
+  max-width: 16ch;
+  margin-bottom: var(--space-4);
+}
+
+.page-head > :last-child {
+  margin-bottom: 0;
+}
+
+.text-page {
+  padding-bottom: var(--section-pad);
 }

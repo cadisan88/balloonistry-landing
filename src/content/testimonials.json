@@ -3,7 +3,20 @@
     "id": "kovila",
     "name": "Kovila",
     "city": "Kitchener",
-    "text": "The balloons for my 30th birthday were beautiful. Pink tones, gold butterflies and a floral base. Highly recommended!",
+    "message": "The balloons for my 30th birthday were beautiful. Pink tones, gold butterflies and a floral base. Highly recommended!",
+    "image": "../assets/testimonials/review-01.jpg",
     "featured": true
+  },
+  {
+    "id": "review-02",
+    "name": "Andres Sanabria",
+    "message": "Decoración mojarritica.",
+    "image": "../assets/testimonials/review-02.jpg"
+  },
+  {
+    "id": "review-03",
+    "name": "TODO: customer name",
+    "message": "TODO: customer review text from the owner.",
+    "image": "../assets/testimonials/review-03.jpg"
   }
 ]

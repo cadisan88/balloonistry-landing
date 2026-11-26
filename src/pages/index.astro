@@ -2,27 +2,39 @@
 import { getCollection } from 'astro:content';
 import CategoryTiles from '../components/CategoryTiles.astro';
 import ConnectSection from '../components/ConnectSection.astro';
+import Confetti from '../components/Confetti.astro';
 import EventGallery from '../components/EventGallery.astro';
 import EventServices from '../components/EventServices.astro';
+import Fringe from '../components/Fringe.astro';
 import HomeHero from '../components/HomeHero.astro';
-import InquiryBuilder from '../components/InquiryBuilder.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Lightbox from '../components/Lightbox.astro';
 import ProductGrid from '../components/ProductGrid.astro';
 import SectionHeader from '../components/SectionHeader.astro';
-import Testimonial from '../components/Testimonial.astro';
+import TestimonialCarousel from '../components/TestimonialCarousel.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getFeaturedProducts, getVisibleCategories } from '../lib/content';
-import { EVENT_TYPE_LABELS } from '../lib/contact/rules';
+import { getEventsGallery, getFeaturedProducts, getVisibleCategories } from '../lib/content';
 
-const [featured, categories, testimonials] = await Promise.all([
+const [featured, categories, testimonials, eventGallery] = await Promise.all([
   getFeaturedProducts(),
   getVisibleCategories(),
   getCollection('testimonials'),
+  getEventsGallery(),
 ]);
-const testimonial = testimonials.find((entry) => entry.data.featured);
+// Featured reviews first, then the file order
+const reviews = [...testimonials].sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
 
-// Inquiry builder choices: the event types the quote form knows, and the shop categories
-const occasions = Object.values(EVENT_TYPE_LABELS);
-const inquiryItems = [...categories.map((category) => category.data.name), 'Event decor'];
+const orderSteps = [
+  { title: 'Pick your favourites', text: 'Browse the shop and choose the balloons you love.' },
+  {
+    title: 'Add them to your quote list',
+    text: 'Add each one to your list, with the options you like.',
+  },
+  {
+    title: 'Send the list',
+    text: 'Send it on WhatsApp, Instagram, text or a call; we will contact you ASAP.',
+  },
+];
 ---
 
 <BaseLayout
@@ -33,80 +45,99 @@ const inquiryItems = [...categories.map((category) => category.data.name), 'Even
   description="Custom balloon gifts, helium bouquets and event decor in Kitchener-Waterloo. Personalized balloons for birthdays, weddings, baby showers and more."
 >
   <HomeHero />
+  <Fringe />
 
-  <section class="section band band--cream home-events" aria-labelledby="events-title">
+  <!-- Featured products: cream ground, white cards -->
+  <section class="section band band--cream" aria-labelledby="products-title">
     <div class="container">
-      <SectionHeader title="Event balloon design and installation" id="events-title" display>
+      <div class="home-products__head">
+        <SectionHeader eyebrow="Shop" title="Featured balloons" id="products-title" />
+        <a class="btn btn-secondary" href="/shop/">
+          See all products
+        </a>
+      </div>
+      <ProductGrid products={featured} list="home_featured" zoomable />
+    </div>
+  </section>
+
+  <!-- How ordering works: lavender-soft ground -->
+  <section class="section band band--lavender-soft" aria-labelledby="how-title">
+    <div class="container">
+      <SectionHeader eyebrow="How ordering works" title="Three easy steps" id="how-title" />
+      <HowItWorks steps={orderSteps} />
+    </div>
+  </section>
+
+  <!-- Categories: cream -->
+  <section class="section band band--cream" aria-labelledby="categories-title">
+    <div class="container">
+      <SectionHeader eyebrow="Browse" title="Shop by category" id="categories-title" />
+      <CategoryTiles categories={categories} location="home" />
+    </div>
+  </section>
+
+  <!-- Event decor teaser: turquoise-soft -->
+  <section class="section band band--turquoise-soft" aria-labelledby="events-title">
+    <div class="container">
+      <SectionHeader
+        eyebrow="Event decor"
+        title="Event balloon design and installation"
+        id="events-title"
+      >
         <p>
           We design balloon decor for your celebration and install it at your venue. Tell us your
           date, colours and theme, and we will send you a design and a quote.
         </p>
       </SectionHeader>
-      <EventGallery limit={3} />
+      <EventGallery photos={eventGallery} limit={3} />
       <div class="home-events__details">
         <EventServices />
-        <a class="btn btn-primary" href="/events/#quote" data-quote-cta data-location="home">
-          Request a quote
-        </a>
+        <div class="btn-row">
+          <a class="btn btn-primary" href="/events/#quote" data-quote-cta data-location="home">
+            Request a quote
+          </a>
+          <a class="btn btn-secondary" href="/events/">
+            See event decor
+          </a>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="section band band--cream" aria-labelledby="products-title">
-    <div class="container">
-      <div class="home-products__head">
-        <SectionHeader title="Our products" id="products-title" display />
-        <a class="btn btn-ghost" href="/shop/">
-          See all products
-        </a>
-      </div>
-      <ProductGrid products={featured} list="home_featured" />
-
-      <h3 class="home-categories__title reveal">Shop by category</h3>
-      <CategoryTiles categories={categories} location="home" />
+  <!-- Corporate teaser: the one ink band of the page, white text -->
+  <section class="section band-dark home-corporate" aria-labelledby="corporate-title">
+    <Confetti variant="field" />
+    <div class="container home-corporate__inner">
+      <p class="eyebrow">Corporate</p>
+      <h2 id="corporate-title">Balloon decor for corporate events</h2>
+      <a class="btn btn-primary" href="/corporate/">
+        See corporate decor
+      </a>
     </div>
   </section>
 
-  {testimonial && (
-    <section
-      class="section band band--lavender-soft scallop-top scallop-bottom home-love"
-      aria-labelledby="love-title"
-    >
+  {reviews.length > 0 && (
+    <section class="section band band--white" aria-labelledby="love-title">
       <div class="container">
         <h2 class="home-love__title" id="love-title">
           Client love
         </h2>
-        <Testimonial testimonial={testimonial} />
+        <TestimonialCarousel testimonials={reviews} labelledby="love-title" />
       </div>
     </section>
   )}
 
-  <section class="section band band--cream" id="contact" aria-labelledby="contact-title">
+  <!-- Contact: lavender-soft, the fringe hangs above the footer from the footer itself -->
+  <section class="section band band--lavender-soft" id="contact" aria-labelledby="contact-title">
     <div class="container">
-      <SectionHeader title="Connect with us" id="contact-title" display />
-      <InquiryBuilder target="home-message" occasions={occasions} items={inquiryItems} />
+      <SectionHeader eyebrow="Contact" title="Connect with us" id="contact-title" />
       <ConnectSection idPrefix="home" />
     </div>
   </section>
+  <Lightbox />
 </BaseLayout>
 
 <style>
-  /* ----- Installations ----- */
-
-  .home-events__details {
-    display: grid;
-    gap: var(--space-6);
-    margin-top: var(--space-8);
-  }
-
-  .home-events__details :global(.event-services) {
-    margin-bottom: 0;
-  }
-
-  .home-events__details .btn {
-    justify-self: start;
-  }
-
   /* ----- Products: heading on the left, "See all" on the right ----- */
 
   .home-products__head {
@@ -122,28 +153,51 @@ const inquiryItems = [...categories.map((category) => category.data.name), 'Even
     margin-bottom: 0;
   }
 
-  .home-categories__title {
-    margin: var(--space-8) 0 var(--space-5);
-    font-size: var(--text-h3);
+  /* ----- Event decor ----- */
+
+  .home-events__details {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+  }
+
+  .home-events__details :global(.event-services) {
+    margin-bottom: 0;
+  }
+
+  /* ----- Corporate band ----- */
+
+  .home-corporate {
+    overflow: hidden;
+  }
+
+  .home-corporate__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+
+  .home-corporate h2 {
+    max-width: 16ch;
+    margin-bottom: var(--space-5);
+    font-size: var(--text-display-2);
+    line-height: var(--leading-display);
   }
 
   /* ----- Client love ----- */
 
-  .home-love {
-    margin-block: var(--scallop-height);
-  }
-
-  /* Lines up with the quote text below it */
+  /* Lines up with the carousel below it */
   .home-love__title {
-    max-width: 48rem;
+    max-width: 56rem;
     margin: 0 auto var(--space-5);
-    font-size: var(--text-h3);
+    font-family: var(--font-body);
+    font-size: var(--text-eyebrow);
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
     color: var(--color-crimson-deep);
-  }
-
-  /* ----- Connect: keep the builder at a readable width ----- */
-
-  #contact :global(.inquiry) {
-    max-width: 48rem;
   }
 </style>

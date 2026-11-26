@@ -53,9 +53,15 @@ const categories = await getVisibleCategories();
     margin-inline: calc(-1 * var(--gutter));
   }
 
+  /* From 860px the chips wrap inside the container, next to the Sort select */
   @media (min-width: 860px) {
+    .category-chips {
+      margin-inline: 0;
+    }
+
     .category-chips ul {
       flex-wrap: wrap;
+      padding-inline: 0;
       overflow-x: visible;
     }
   }

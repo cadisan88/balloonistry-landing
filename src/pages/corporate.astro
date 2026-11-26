@@ -1,0 +1,279 @@
+---
+import { Picture } from 'astro:assets';
+import ChannelLinks from '../components/ChannelLinks.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Confetti from '../components/Confetti.astro';
+import EventGallery from '../components/EventGallery.astro';
+import Fringe from '../components/Fringe.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { GALLERY_PREVIEW_COUNT } from '../config/events';
+import { getCorporateGallery, getEventsGallery } from '../lib/content';
+import { site } from '../config/site';
+
+const QUOTE_ID = 'quote';
+const eventGallery = await getEventsGallery();
+const corporateGallery = await getCorporateGallery();
+const heroPhoto = eventGallery[1] ?? eventGallery[0];
+
+// Headings are generic structure. Every sentence that would state a business fact is a TODO.
+const offers = [
+  { title: 'Brand-colour decor', text: 'TODO: describe brand-colour balloon decor.' },
+  { title: 'Office celebrations', text: 'TODO: describe office celebration decor.' },
+  { title: 'Launches and trade shows', text: 'TODO: describe launch and trade show decor.' },
+  { title: 'Holiday parties', text: 'TODO: describe holiday party decor.' },
+];
+
+const steps = [
+  { title: 'Tell us about the event', text: 'TODO: explain what to share with us.' },
+  { title: 'Get a quote and a mock-up idea', text: 'TODO: explain the quote and mock-up.' },
+  { title: 'We install on the day', text: 'TODO: explain installation.' },
+];
+---
+
+<BaseLayout
+  title="Corporate Events"
+  description={`Balloon decor for corporate events by ${site.name} in Kitchener-Waterloo.`}
+  pageType="corporate"
+  hero
+  formHref={`#${QUOTE_ID}`}
+>
+  <section class="band band--cream corp-hero" aria-labelledby="corp-title">
+    <div class="container corp-hero__grid">
+      <div class="corp-hero__text">
+        <p class="eyebrow enter">Corporate</p>
+        <h1 id="corp-title" class="enter enter-d1">
+          Balloon decor for corporate events
+        </h1>
+        <p class="lead enter enter-d2">TODO: one or two sentences about corporate balloon decor.</p>
+        <div class="btn-row enter enter-d3">
+          <a
+            class="btn btn-primary"
+            href={`#${QUOTE_ID}`}
+            data-form-link
+            data-quote-cta
+            data-location="corporate"
+          >
+            Request a quote
+          </a>
+        </div>
+      </div>
+      {heroPhoto && (
+        <div class="corp-hero__frame">
+          <Confetti variant="frame" />
+          <div class="corp-hero__media enter-scale enter-d2">
+            <Picture
+              src={heroPhoto.image}
+              alt={heroPhoto.alt}
+              formats={['avif', 'webp']}
+              widths={[480, 800, 1200]}
+              sizes="(min-width: 1180px) 460px, (min-width: 860px) 40vw, 80vw"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+  <Fringe />
+
+  <section class="section band band--white" aria-labelledby="offers-title">
+    <div class="container">
+      <SectionHeader
+        eyebrow="What we can do"
+        title="Decor for every work occasion"
+        id="offers-title"
+      />
+      <ul class="corp-offers">
+        {offers.map((offer) => (
+          <li class="corp-offers__card">
+            <h3>{offer.title}</h3>
+            <p>{offer.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section band band--lavender-soft" aria-labelledby="how-title">
+    <div class="container">
+      <SectionHeader eyebrow="How it works" title="Three simple steps" id="how-title" />
+      <HowItWorks steps={steps} />
+    </div>
+  </section>
+
+  <section class="section band band--turquoise-soft" aria-labelledby="gallery-title">
+    <div class="container">
+      <SectionHeader eyebrow="Gallery" title="Our balloon work" id="gallery-title" />
+      <EventGallery
+        photos={corporateGallery}
+        limit={GALLERY_PREVIEW_COUNT}
+        moreHref="/corporate/gallery/"
+      />
+    </div>
+  </section>
+
+  <section class="section band band--cream" id={QUOTE_ID} aria-labelledby="quote-title">
+    <div class="container container--narrow">
+      <SectionHeader eyebrow="Get a quote" title="Request a quote" id="quote-title">
+        <p>
+          Tell us about your event. The date, type and city help us plan, but they are optional.
+        </p>
+      </SectionHeader>
+      <div class="corp-quote__panel">
+        <ContactForm
+          type="event_quote"
+          idPrefix="quote"
+          location="corporate"
+          eventType="corporate"
+        />
+      </div>
+      <div class="corp-quote__channels">
+        <h3>Prefer to chat?</h3>
+        <ChannelLinks location="corporate" intent="contact" />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .corp-hero {
+    overflow-x: clip;
+    padding-block: var(--space-7) calc(var(--section-pad) + var(--fringe-tooth));
+  }
+
+  .corp-hero__grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: center;
+  }
+
+  @media (min-width: 860px) {
+    .corp-hero__grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: var(--space-7);
+    }
+  }
+
+  .corp-hero__text h1 {
+    max-width: 12ch;
+    margin-bottom: var(--space-5);
+  }
+
+  .corp-hero__text .lead {
+    max-width: 46ch;
+    margin-bottom: var(--space-6);
+  }
+
+  .corp-hero__frame {
+    position: relative;
+    width: min(100%, 28rem);
+    margin-inline: auto;
+  }
+
+  .corp-hero__frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    background: var(--color-turquoise);
+    transform: translate(var(--space-4), var(--space-4)) rotate(2deg);
+  }
+
+  .corp-hero__media {
+    position: relative;
+    z-index: 1;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-lavender-soft);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .corp-hero__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ----- What we can do ----- */
+
+  .corp-offers {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .corp-offers {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1180px) {
+    .corp-offers {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .corp-offers__card {
+    padding: var(--space-5);
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-lg);
+    background: var(--color-cream);
+  }
+
+  /* A coloured balloon dot on each card, in turn */
+  .corp-offers__card::before {
+    content: '';
+    display: block;
+    width: 2.25rem;
+    height: 2.75rem;
+    margin-bottom: var(--space-4);
+    border-radius: 50% 50% 48% 48% / 56% 56% 44% 44%;
+    background: var(--color-crimson);
+  }
+
+  .corp-offers__card:nth-child(2)::before {
+    background: var(--color-turquoise);
+  }
+
+  .corp-offers__card:nth-child(3)::before {
+    background: var(--color-orange);
+  }
+
+  .corp-offers__card:nth-child(4)::before {
+    background: var(--color-lavender);
+  }
+
+  .corp-offers__card h3 {
+    font-size: 1.5rem;
+  }
+
+  .corp-offers__card p {
+    margin: 0;
+  }
+
+  /* ----- Quote ----- */
+
+  .corp-quote__panel {
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 600px) {
+    .corp-quote__panel {
+      padding: var(--space-6);
+    }
+  }
+
+  .corp-quote__channels {
+    margin-top: var(--space-7);
+  }
+</style>

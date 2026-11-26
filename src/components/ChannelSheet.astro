@@ -67,6 +67,9 @@ const { product, formHref } = Astro.props;
       transform var(--duration-hover) var(--ease);
   }
 
+  /* Hidden while the full-screen menu, the quote drawer or the lightbox is open
+     (they lock the page scroll with html.is-scroll-locked) */
+  :global(html.is-scroll-locked) .floating-order,
   .floating-order:global(.is-hidden) {
     opacity: 0;
     transform: translateY(1rem);

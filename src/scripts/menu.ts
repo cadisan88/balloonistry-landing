@@ -1,89 +1,87 @@
 /**
- * Header behaviour: solid background after 20px of scroll, the mobile menu,
- * and the "More" submenu (click, hover on desktop, Esc to close).
+ * Header behaviour: border and shadow after 20px of scroll, and the full-screen menu
+ * (focus trap, Esc, scroll lock, focus return, aria-expanded).
  */
 
 const SCROLL_THRESHOLD = 20;
-const DESKTOP_HOVER = '(min-width: 860px) and (hover: hover)';
+const DESKTOP = '(min-width: 1180px)';
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function initMenu(): void {
   const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   if (!header) return;
 
-  const toggle = header.querySelector<HTMLButtonElement>('[data-nav-toggle]');
-  const groups = [...header.querySelectorAll<HTMLElement>('[data-nav-group]')];
-  const groupButton = (group: HTMLElement) =>
-    group.querySelector<HTMLButtonElement>('[data-nav-group-button]');
-
-  const setExpanded = (button: HTMLButtonElement | null, open: boolean) => {
-    button?.setAttribute('aria-expanded', String(open));
-  };
-  const isExpanded = (button: HTMLButtonElement | null) =>
-    button?.getAttribute('aria-expanded') === 'true';
-
-  const closeGroups = () => groups.forEach((group) => setExpanded(groupButton(group), false));
-
-  const setMenuOpen = (open: boolean) => {
-    setExpanded(toggle, open);
-    header.classList.toggle('is-open', open);
-    if (!open) closeGroups();
-  };
-
-  // Solid header after a little scroll
+  // Header shadow after a little scroll
   const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > SCROLL_THRESHOLD);
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+  // A page restored from the back/forward cache or reloaded mid-page keeps the right state
+  window.addEventListener('pageshow', onScroll);
 
-  // Mobile menu
-  toggle?.addEventListener('click', () => setMenuOpen(!isExpanded(toggle)));
+  if (!menu || !toggle) return;
+  const root = document.documentElement;
 
-  // "More" submenu
-  const hover = window.matchMedia(DESKTOP_HOVER);
-  for (const group of groups) {
-    const button = groupButton(group);
-    button?.addEventListener('click', (event) => {
-      // With a mouse on desktop, hover has already opened the menu: a click keeps it open.
-      // Keyboard "clicks" (detail 0) and touch always toggle.
-      const mouseOnDesktop = hover.matches && event.detail > 0;
-      setExpanded(button, mouseOnDesktop ? true : !isExpanded(button));
-    });
-    group.addEventListener('mouseenter', () => {
-      if (hover.matches) setExpanded(button, true);
-    });
-    group.addEventListener('mouseleave', () => {
-      if (hover.matches) setExpanded(button, false);
-    });
-    // Close when keyboard focus leaves the group
-    group.addEventListener('focusout', (event) => {
-      const next = event.relatedTarget;
-      if (next instanceof Node && group.contains(next)) return;
-      if (hover.matches || next instanceof Node) setExpanded(button, false);
-    });
-  }
+  const isOpen = () => menu.classList.contains('is-open');
+  const focusables = () =>
+    [...menu.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+      (element) => element.offsetParent !== null || element === document.activeElement,
+    );
 
-  // Esc closes any open menu and returns focus to its button
+  const setOpen = (open: boolean, returnFocus = true) => {
+    if (open === isOpen()) return;
+    menu.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    root.classList.toggle('is-scroll-locked', open);
+    if (open) {
+      menu.removeAttribute('inert');
+      focusables()[0]?.focus();
+    } else {
+      menu.setAttribute('inert', '');
+      if (returnFocus) toggle.focus();
+    }
+  };
+
+  toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+  menu.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    // The close button, or choosing a link, closes the menu (the link keeps its default action)
+    if (event.target.closest('[data-menu-close]')) setOpen(false);
+    else if (event.target.closest('[data-menu-close-on-click]')) setOpen(false, false);
+  });
+
   document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-    const openGroup = groups.find((group) => isExpanded(groupButton(group)));
-    if (openGroup) {
-      const button = groupButton(openGroup);
-      setExpanded(button, false);
-      button?.focus();
+    if (!isOpen()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setOpen(false);
       return;
     }
-    if (isExpanded(toggle)) {
-      setMenuOpen(false);
-      toggle?.focus();
+    if (event.key !== 'Tab') return;
+
+    // Focus trap: Tab and Shift+Tab cycle inside the menu
+    const items = focusables();
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (!first || !last) return;
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !menu.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || !menu.contains(active))) {
+      event.preventDefault();
+      first.focus();
     }
   });
 
-  // A click outside the header closes everything
-  document.addEventListener('click', (event) => {
-    if (event.target instanceof Node && header.contains(event.target)) return;
-    closeGroups();
-    if (isExpanded(toggle)) setMenuOpen(false);
+  // The desktop layout has no menu button: leaving the small layout closes the menu
+  window.matchMedia(DESKTOP).addEventListener('change', (event) => {
+    if (event.matches) setOpen(false, false);
   });
 
-  // Leaving the mobile layout resets the menu
-  window.matchMedia('(min-width: 860px)').addEventListener('change', () => setMenuOpen(false));
+  // Back/forward cache: never come back to a page with the menu locked open
+  window.addEventListener('pageshow', () => setOpen(false, false));
 }

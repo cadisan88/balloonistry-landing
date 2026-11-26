@@ -4,7 +4,7 @@
  * A mistake in a content file (wrong category, missing photo, bad price) fails the build.
  */
 import { existsSync } from 'node:fs';
-import { defineCollection, reference } from 'astro:content';
+import { defineCollection, reference, type SchemaContext } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { FAQ_GROUPS } from './lib/faq';
@@ -36,6 +36,19 @@ const categories = defineCollection({
     }),
 });
 
+const optionChoice = z.object({
+  label: z.string().min(1).max(60),
+  /** Added to the base price. */
+  price: z.number().nonnegative().default(0),
+});
+
+const optionGroup = z.object({
+  name: z.string().min(1).max(40),
+  /** single = radio (first choice is the default), multiple = checkboxes. */
+  type: z.enum(['single', 'multiple']),
+  choices: z.array(optionChoice).min(1).max(12),
+});
+
 const products = defineCollection({
   loader: glob({ pattern: '*.md', base: './src/content/products' }),
   schema: ({ image }) =>
@@ -54,6 +67,23 @@ const products = defineCollection({
       /** false = hidden everywhere. */
       available: z.boolean().default(true),
       order: z.number().int().default(100),
+      /** 0-100, higher = more popular. Used by "Most popular". */
+      popularity: z.number().int().min(0).max(100).default(0),
+      /** Date the product was added. Used by "Newest". Missing sorts last. */
+      added: z.coerce.date().optional(),
+      /** Bullet list in the Features section. */
+      features: z.array(z.string().min(1)).default([]),
+      /** Optional videos, files in public/media/products/. */
+      videos: z
+        .array(
+          z.object({
+            src: z.string().startsWith('/media/'),
+            poster: image().optional(),
+          }),
+        )
+        .default([]),
+      /** Variations that change the price. */
+      options: z.array(optionGroup).max(6).default([]),
     }),
 });
 
@@ -84,12 +114,58 @@ const policies = defineCollection({
 
 const testimonials = defineCollection({
   loader: file('./src/content/testimonials.json'),
+  schema: ({ image }) =>
+    z.object({
+      /** Customer name. */
+      name: z.string().min(1),
+      city: z.string().min(1).optional(),
+      /** The review text. */
+      message: z.string().min(1),
+      /** Photo, relative to this file, in src/assets/testimonials/. */
+      image: image(),
+      /** Shown first in the carousel. */
+      featured: z.boolean().default(false),
+    }),
+});
+
+/** One photo of a gallery. The order of the file is the order on the page. */
+const galleryPhoto = ({ image }: SchemaContext) =>
+  z.object({
+    /** Describes what the photo shows. */
+    alt: z.string().min(1),
+    /** Photo, relative to this file, in src/assets/. */
+    image: image(),
+    /** Optional crop on the full gallery page: width divided by height, e.g. 0.75. */
+    ratio: z.number().positive().optional(),
+  });
+
+const eventsGallery = defineCollection({
+  loader: file('./src/content/events-gallery.json'),
+  schema: galleryPhoto,
+});
+
+const corporateGallery = defineCollection({
+  loader: file('./src/content/corporate-gallery.json'),
+  schema: galleryPhoto,
+});
+
+/** Text shared by every product page. */
+const productInfo = defineCollection({
+  loader: file('./src/content/product-info.json'),
   schema: z.object({
-    name: z.string().min(1),
-    city: z.string().min(1),
-    text: z.string().min(1),
-    featured: z.boolean().default(false),
+    shipping: z.string().min(1),
+    returns: z.string().min(1),
   }),
 });
 
-export const collections = { categories, products, faq, pages, policies, testimonials };
+export const collections = {
+  categories,
+  products,
+  faq,
+  pages,
+  policies,
+  testimonials,
+  eventsGallery,
+  corporateGallery,
+  productInfo,
+};

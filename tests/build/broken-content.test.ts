@@ -41,4 +41,10 @@ describe('broken product files fail the build', { timeout: 120_000 }, () => {
     expect(status).not.toBe(0);
     expect(output).toContain('price');
   });
+
+  it('fails on a negative option price', () => {
+    const { status, output } = syncWith('bad-option-price.md');
+    expect(status).not.toBe(0);
+    expect(output).toContain('price');
+  });
 });

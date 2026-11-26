@@ -1,0 +1,109 @@
+---
+/**
+ * A Pinterest-style masonry of photos in CSS columns (1 column on phones, 2 on tablets, 3 on
+ * desktop). Each photo opens the lightbox: mount one <Lightbox /> on the page.
+ * Heights vary with the photos' `ratio` (see GalleryPhoto in src/lib/content.ts).
+ */
+import { Picture, getImage } from 'astro:assets';
+import type { GalleryPhoto } from '../lib/content';
+
+interface Props {
+  photos: GalleryPhoto[];
+  /** Names the lightbox gallery. Unique per page. */
+  group: string;
+  /** Accessible name of the list. */
+  label: string;
+}
+
+const { photos, group, label } = Astro.props;
+
+const WIDTH = 500;
+// The first row (3 photos on desktop) loads at once, the rest when scrolled near
+const FIRST_ROW = 3;
+
+const items = await Promise.all(
+  photos.map(async (photo, index) => {
+    const height = Math.round(WIDTH / (photo.ratio ?? photo.image.width / photo.image.height));
+    return {
+      photo,
+      height,
+      full: (await getImage({ src: photo.image, width: 1600, format: 'webp' })).src,
+      eager: index < FIRST_ROW,
+      index,
+    };
+  }),
+);
+---
+
+<ul class="masonry" aria-label={label}>
+  {items.map(({ photo, height, full, eager, index }) => (
+    <li class="masonry__item">
+      <button
+        class="masonry__open"
+        type="button"
+        aria-label={`View larger: ${photo.alt}`}
+        data-lightbox-group={group}
+        data-lightbox-index={String(index)}
+        data-full={full}
+        data-alt={photo.alt}
+      >
+        <Picture
+          src={photo.image}
+          alt={photo.alt}
+          formats={['avif', 'webp']}
+          width={WIDTH}
+          height={height}
+          widths={[320, WIDTH]}
+          sizes="(min-width: 1180px) 360px, (min-width: 860px) 30vw, (min-width: 600px) 45vw, 92vw"
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      </button>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .masonry {
+    columns: 1;
+    column-gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .masonry {
+      columns: 2;
+    }
+  }
+
+  @media (min-width: 860px) {
+    .masonry {
+      columns: 3;
+    }
+  }
+
+  .masonry__item {
+    margin: 0 0 var(--space-4);
+    break-inside: avoid;
+  }
+
+  .masonry__open {
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--color-lavender-soft);
+    box-shadow: var(--shadow-sm);
+    cursor: zoom-in;
+  }
+
+  .masonry__open :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>

@@ -1,0 +1,11 @@
+---
+/** Piñata fringe divider (styles: `.fringe` in global.css). Decorative. */
+interface Props {
+  /** Hang from the top edge of the positioned parent instead of sitting in the flow. */
+  top?: boolean;
+}
+
+const { top = false } = Astro.props;
+---
+
+<div class:list={['fringe', { 'fringe--top': top }]} aria-hidden="true"></div>

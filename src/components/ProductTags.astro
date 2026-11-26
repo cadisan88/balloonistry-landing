@@ -1,10 +1,13 @@
 ---
+/** Product tags as die-cut stickers (`.sticker` in global.css). */
 import type { Product } from '../lib/content';
 
 type Tag = Product['data']['tags'][number];
 
 interface Props {
   tags: Tag[];
+  /** Adds an "Add-ons available" sticker (the product has options). */
+  addons?: boolean;
   class?: string;
 }
 
@@ -13,14 +16,20 @@ const LABELS: Record<Tag, string> = {
   'best-seller': 'Best seller',
 };
 
-const { tags, class: className } = Astro.props;
+const MODIFIERS: Record<Tag, string> = {
+  new: '',
+  'best-seller': 'sticker--crimson',
+};
+
+const { tags, addons = false, class: className } = Astro.props;
 ---
 
-{tags.length > 0 && (
+{(tags.length > 0 || addons) && (
   <ul class:list={['product-tags', className]}>
     {tags.map((tag) => (
-      <li class:list={['tag', `tag-${tag}`]}>{LABELS[tag]}</li>
+      <li class:list={['sticker', MODIFIERS[tag]]}>{LABELS[tag]}</li>
     ))}
+    {addons && <li class="sticker sticker--orange">Add-ons available</li>}
   </ul>
 )}
 
