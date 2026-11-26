@@ -13,12 +13,13 @@ import ProductGrid from '../components/ProductGrid.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import TestimonialCarousel from '../components/TestimonialCarousel.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getFeaturedProducts, getVisibleCategories } from '../lib/content';
+import { getEventsGallery, getFeaturedProducts, getVisibleCategories } from '../lib/content';
 
-const [featured, categories, testimonials] = await Promise.all([
+const [featured, categories, testimonials, eventGallery] = await Promise.all([
   getFeaturedProducts(),
   getVisibleCategories(),
   getCollection('testimonials'),
+  getEventsGallery(),
 ]);
 // Featured reviews first, then the file order
 const reviews = [...testimonials].sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
@@ -88,7 +89,7 @@ const orderSteps = [
           date, colours and theme, and we will send you a design and a quote.
         </p>
       </SectionHeader>
-      <EventGallery limit={3} />
+      <EventGallery photos={eventGallery} limit={3} />
       <div class="home-events__details">
         <EventServices />
         <div class="btn-row">

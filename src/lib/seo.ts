@@ -119,6 +119,19 @@ export function serializeJsonLd(data: JsonLd): string {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
+/** The fixed pages of the site, for the sitemap (products, categories and policies come from content). */
+export const STATIC_PAGE_PATHS = [
+  '/',
+  '/shop/',
+  '/events/',
+  '/events/gallery/',
+  '/corporate/',
+  '/corporate/gallery/',
+  '/contact/',
+  '/faq/',
+  '/about/',
+];
+
 export interface SitemapEntry {
   path: string;
 }

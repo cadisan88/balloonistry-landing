@@ -2,7 +2,7 @@
  * FAQ search: filters the questions as the person types (debounced).
  * Matching is in src/lib/faq.ts. Answers are matched on their rendered text.
  */
-import { faqMatches, faqResultsMessage } from '../lib/faq';
+import { faqEmptyMessage, faqMatches, faqResultsMessage } from '../lib/faq';
 
 const DEBOUNCE_MS = 150;
 
@@ -10,9 +10,9 @@ export function initFaqSearch(): void {
   const input = document.querySelector<HTMLInputElement>('[data-faq-input]');
   const status = document.querySelector<HTMLElement>('[data-faq-status]');
   const empty = document.querySelector<HTMLElement>('[data-faq-empty]');
-  const emptyQuery = document.querySelector<HTMLElement>('[data-faq-empty-query]');
+  const emptyMessage = document.querySelector<HTMLElement>('[data-faq-empty-message]');
   const clear = document.querySelector<HTMLButtonElement>('[data-faq-clear]');
-  if (!input || !status || !empty || !emptyQuery || !clear) return;
+  if (!input || !status || !empty || !emptyMessage || !clear) return;
 
   const groups = [...document.querySelectorAll<HTMLElement>('[data-faq-group]')].map((group) => ({
     group,
@@ -40,7 +40,7 @@ export function initFaqSearch(): void {
     }
 
     empty.hidden = !searching || found > 0;
-    emptyQuery.textContent = query.trim();
+    emptyMessage.textContent = faqEmptyMessage(query);
     status.textContent = searching ? faqResultsMessage(found) : '';
   };
 

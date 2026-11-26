@@ -4,7 +4,7 @@
  * A mistake in a content file (wrong category, missing photo, bad price) fails the build.
  */
 import { existsSync } from 'node:fs';
-import { defineCollection, reference } from 'astro:content';
+import { defineCollection, reference, type SchemaContext } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { FAQ_GROUPS } from './lib/faq';
@@ -128,6 +128,27 @@ const testimonials = defineCollection({
     }),
 });
 
+/** One photo of a gallery. The order of the file is the order on the page. */
+const galleryPhoto = ({ image }: SchemaContext) =>
+  z.object({
+    /** Describes what the photo shows. */
+    alt: z.string().min(1),
+    /** Photo, relative to this file, in src/assets/. */
+    image: image(),
+    /** Optional crop on the full gallery page: width divided by height, e.g. 0.75. */
+    ratio: z.number().positive().optional(),
+  });
+
+const eventsGallery = defineCollection({
+  loader: file('./src/content/events-gallery.json'),
+  schema: galleryPhoto,
+});
+
+const corporateGallery = defineCollection({
+  loader: file('./src/content/corporate-gallery.json'),
+  schema: galleryPhoto,
+});
+
 /** Text shared by every product page. */
 const productInfo = defineCollection({
   loader: file('./src/content/product-info.json'),
@@ -144,5 +165,7 @@ export const collections = {
   pages,
   policies,
   testimonials,
+  eventsGallery,
+  corporateGallery,
   productInfo,
 };

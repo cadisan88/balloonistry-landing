@@ -1,6 +1,6 @@
 ---
 /**
- * "Client love" carousel: one review at a time, with prev/next, dots and a Pause button.
+ * "Client love" carousel: one review at a time, with prev/next arrows beside it, dots and a Pause/Play icon button.
  * Timing comes from src/config/ui.ts. Behaviour is in src/scripts/carousel.ts.
  * Without JavaScript every review is shown in a list. With one review there are no controls.
  */
@@ -28,6 +28,17 @@ const multiple = count > 1;
     data-carousel
     data-autoplay-ms={multiple ? TESTIMONIAL_AUTOPLAY_MS : undefined}
   >
+    {multiple && (
+      <button
+        class="carousel__btn carousel__prev"
+        type="button"
+        data-carousel-prev
+        aria-label="Previous review"
+      >
+        <Icon name="chevron-left" size={22} />
+      </button>
+    )}
+
     <div class="carousel__slides" data-carousel-slides aria-live="off">
       {testimonials.map((testimonial, index) => (
         <div
@@ -43,28 +54,41 @@ const multiple = count > 1;
     </div>
 
     {multiple && (
-      <div class="carousel__controls">
-        <button class="carousel__btn" type="button" data-carousel-prev aria-label="Previous review">
-          <Icon name="chevron-left" size={22} />
-        </button>
-        <div class="carousel__dots">
-          {testimonials.map((_, index) => (
-            <button
-              class="carousel__dot"
-              type="button"
-              data-carousel-dot
-              aria-label={`Show review ${index + 1} of ${count}`}
-              aria-current={index === 0 ? 'true' : undefined}
-            />
-          ))}
-        </div>
-        <button class="carousel__btn" type="button" data-carousel-next aria-label="Next review">
-          <Icon name="chevron-right" size={22} />
-        </button>
-        <button class="carousel__pause" type="button" data-carousel-toggle aria-pressed="false">
-          Pause
-        </button>
+      <button
+        class="carousel__btn carousel__next"
+        type="button"
+        data-carousel-next
+        aria-label="Next review"
+      >
+        <Icon name="chevron-right" size={22} />
+      </button>
+    )}
+
+    {multiple && (
+      <div class="carousel__dots">
+        {testimonials.map((_, index) => (
+          <button
+            class="carousel__dot"
+            type="button"
+            data-carousel-dot
+            aria-label={`Show review ${index + 1} of ${count}`}
+            aria-current={index === 0 ? 'true' : undefined}
+          />
+        ))}
       </div>
+    )}
+
+    {multiple && (
+      <button
+        class="carousel__pause"
+        type="button"
+        data-carousel-toggle
+        data-state="playing"
+        aria-label="Pause automatic reviews"
+      >
+        <Icon name="pause" size={20} class="carousel__pause-icon" />
+        <Icon name="play" size={20} class="carousel__play-icon" />
+      </button>
     )}
   </section>
 )}
@@ -77,7 +101,7 @@ const multiple = count > 1;
 
 <style>
   .carousel {
-    max-width: 56rem;
+    max-width: 64rem;
     margin-inline: auto;
   }
 
@@ -87,15 +111,72 @@ const multiple = count > 1;
     gap: var(--space-8);
   }
 
-  .carousel__controls {
+  .carousel__prev,
+  .carousel__next,
+  .carousel__dots,
+  .carousel__pause {
     display: none;
   }
 
-  /* With JavaScript: the slides share one cell and cross-fade */
+  /*
+   * With JavaScript the carousel is a grid. From 600px the arrows sit beside the slides, so they
+   * never cover the photo or the text. On phones there is no room at the sides: the arrows go
+   * into the row of dots and the pause button gets a row at the bottom right.
+   */
+  :global(.js) .carousel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'slides slides slides'
+      'prev dots next'
+      'pause pause pause';
+    align-items: center;
+    row-gap: var(--space-3);
+  }
+
   :global(.js) .carousel__slides {
+    grid-area: slides;
     gap: 0;
   }
 
+  :global(.js) .carousel__prev {
+    grid-area: prev;
+    display: inline-flex;
+  }
+
+  :global(.js) .carousel__next {
+    grid-area: next;
+    display: inline-flex;
+  }
+
+  :global(.js) .carousel__dots {
+    grid-area: dots;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.js) .carousel__pause {
+    grid-area: pause;
+    display: inline-flex;
+    justify-self: end;
+  }
+
+  :global(.js) .carousel__pause[hidden] {
+    display: none;
+  }
+
+  @media (min-width: 600px) {
+    :global(.js) .carousel {
+      column-gap: var(--space-4);
+      grid-template-areas:
+        'prev slides next'
+        '. dots pause';
+    }
+  }
+
+  /* The slides share one cell and cross-fade */
   :global(.js) .carousel__slide {
     grid-area: 1 / 1;
     opacity: 0;
@@ -114,17 +195,8 @@ const multiple = count > 1;
     transition-delay: 0s;
   }
 
-  :global(.js) .carousel__controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
-  }
-
   .carousel__btn,
   .carousel__pause {
-    display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 44px;
@@ -138,12 +210,14 @@ const multiple = count > 1;
     transition: background-color var(--duration-hover) var(--ease);
   }
 
-  .carousel__pause {
-    padding-inline: var(--space-4);
+  /* The pause bars while it plays, the play triangle while it is paused */
+  .carousel__pause :global(.carousel__play-icon),
+  .carousel__pause[data-state='paused'] :global(.carousel__pause-icon) {
+    display: none;
   }
 
-  .carousel__pause[hidden] {
-    display: none;
+  .carousel__pause[data-state='paused'] :global(.carousel__play-icon) {
+    display: block;
   }
 
   .carousel__btn:hover,
@@ -151,15 +225,10 @@ const multiple = count > 1;
     background: var(--color-lavender-soft);
   }
 
-  .carousel__dots {
-    display: flex;
-    align-items: center;
-  }
-
   /* The dot is small to look at but 44px to tap */
   .carousel__dot {
     position: relative;
-    width: 32px;
+    width: 44px;
     height: 44px;
     padding: 0;
     border: 0;
@@ -173,7 +242,7 @@ const multiple = count > 1;
     inset: 50% auto auto 50%;
     width: 12px;
     height: 12px;
-    border: 2px solid var(--color-ink);
+    border: 2px solid var(--color-crimson);
     border-radius: var(--radius-pill);
     background: transparent;
     translate: -50% -50%;
@@ -181,7 +250,7 @@ const multiple = count > 1;
   }
 
   .carousel__dot[aria-current='true']::before {
-    background: var(--color-ink);
+    background: var(--color-crimson);
   }
 
   .carousel__dot:focus-visible,

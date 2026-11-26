@@ -1,0 +1,83 @@
+[
+  {
+    "id": "events-01",
+    "image": "../assets/events/placeholder-arch.jpg",
+    "alt": "Placeholder drawing of a balloon arch"
+  },
+  {
+    "id": "events-02",
+    "image": "../assets/events/placeholder-garland.jpg",
+    "alt": "Placeholder drawing of an organic balloon garland"
+  },
+  {
+    "id": "events-03",
+    "image": "../assets/events/placeholder-columns.jpg",
+    "alt": "Placeholder drawing of two balloon columns"
+  },
+  {
+    "id": "events-04",
+    "image": "../assets/products/centerpiece_01.jpg",
+    "alt": "Placeholder photo of a balloon centerpiece",
+    "ratio": 0.75
+  },
+  {
+    "id": "events-05",
+    "image": "../assets/events/placeholder-garland.jpg",
+    "alt": "Placeholder drawing of a second organic balloon garland",
+    "ratio": 1
+  },
+  {
+    "id": "events-06",
+    "image": "../assets/products/centerpiece_02.png",
+    "alt": "Placeholder photo of a second balloon centerpiece",
+    "ratio": 0.6667
+  },
+  {
+    "id": "events-07",
+    "image": "../assets/events/placeholder-arch.jpg",
+    "alt": "Placeholder drawing of a second balloon arch",
+    "ratio": 0.8
+  },
+  {
+    "id": "events-08",
+    "image": "../assets/products/centerpiece_03.png",
+    "alt": "Placeholder photo of a third balloon centerpiece",
+    "ratio": 1
+  },
+  {
+    "id": "events-09",
+    "image": "../assets/events/placeholder-columns.jpg",
+    "alt": "Placeholder drawing of two more balloon columns",
+    "ratio": 0.75
+  },
+  {
+    "id": "events-10",
+    "image": "../assets/products/centerpiece_04.png",
+    "alt": "Placeholder photo of a fourth balloon centerpiece",
+    "ratio": 0.75
+  },
+  {
+    "id": "events-11",
+    "image": "../assets/events/placeholder-arch.jpg",
+    "alt": "Placeholder drawing of a third balloon arch",
+    "ratio": 1.5
+  },
+  {
+    "id": "events-12",
+    "image": "../assets/events/placeholder-garland.jpg",
+    "alt": "Placeholder drawing of a third organic balloon garland",
+    "ratio": 0.8
+  },
+  {
+    "id": "events-13",
+    "image": "../assets/products/centerpiece_01.jpg",
+    "alt": "Placeholder photo of a fifth balloon centerpiece",
+    "ratio": 1
+  },
+  {
+    "id": "events-14",
+    "image": "../assets/events/placeholder-columns.jpg",
+    "alt": "Placeholder drawing of a third pair of balloon columns",
+    "ratio": 0.6667
+  }
+]

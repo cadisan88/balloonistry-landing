@@ -1,0 +1,51 @@
+---
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import MasonryGallery from '../../components/MasonryGallery.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCorporateGallery } from '../../lib/content';
+import { site } from '../../config/site';
+import { breadcrumbJsonLd } from '../../lib/seo';
+
+const corporateGallery = await getCorporateGallery();
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Corporate', path: '/corporate/' },
+  { name: 'Gallery', path: '/corporate/gallery/' },
+];
+---
+
+<BaseLayout
+  title="Corporate Decor Gallery"
+  description={`Photos of balloon decor for corporate events by ${site.name} in Kitchener-Waterloo.`}
+  pageType="corporate"
+  jsonLd={[breadcrumbJsonLd(crumbs)]}
+>
+  <section class="container gallery-page">
+    <Breadcrumbs crumbs={crumbs} />
+    <header class="page-head gallery-page__head">
+      <h1>Corporate decor gallery</h1>
+      <p class="lead">A look at the balloon decor we have created for corporate events.</p>
+    </header>
+    <MasonryGallery
+      photos={corporateGallery}
+      group="corporate-gallery"
+      label="Corporate decor photos"
+    />
+  </section>
+  <Lightbox />
+</BaseLayout>
+
+<style>
+  .gallery-page {
+    padding-bottom: var(--section-pad);
+  }
+
+  .gallery-page__head {
+    margin-top: var(--space-4);
+  }
+
+  .gallery-page__head h1 {
+    max-width: none;
+  }
+</style>

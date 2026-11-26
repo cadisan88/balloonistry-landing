@@ -9,6 +9,7 @@ import {
   robotsTxt,
   serializeJsonLd,
   sitemapXml,
+  STATIC_PAGE_PATHS,
 } from '../src/lib/seo';
 
 group('placeholders', () => {
@@ -107,6 +108,12 @@ group('sitemap and robots', () => {
     const xml = sitemapXml([{ path: '/' }, { path: '/shop/' }]);
     expect(xml).toContain('<loc>https://www.balloonistry.ca/</loc>');
     expect(xml).toContain('<loc>https://www.balloonistry.ca/shop/</loc>');
+  });
+
+  it('includes the gallery pages', () => {
+    const xml = sitemapXml(STATIC_PAGE_PATHS.map((path) => ({ path })));
+    expect(xml).toContain('<loc>https://www.balloonistry.ca/events/gallery/</loc>');
+    expect(xml).toContain('<loc>https://www.balloonistry.ca/corporate/gallery/</loc>');
   });
 
   it('points robots to the sitemap and keeps the API out', () => {

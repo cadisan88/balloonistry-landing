@@ -8,10 +8,13 @@ import Fringe from '../components/Fringe.astro';
 import HowItWorks from '../components/HowItWorks.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { corporateGallery, eventGallery } from '../config/events';
+import { GALLERY_PREVIEW_COUNT } from '../config/events';
+import { getCorporateGallery, getEventsGallery } from '../lib/content';
 import { site } from '../config/site';
 
 const QUOTE_ID = 'quote';
+const eventGallery = await getEventsGallery();
+const corporateGallery = await getCorporateGallery();
 const heroPhoto = eventGallery[1] ?? eventGallery[0];
 
 // Headings are generic structure. Every sentence that would state a business fact is a TODO.
@@ -104,7 +107,11 @@ const steps = [
   <section class="section band band--turquoise-soft" aria-labelledby="gallery-title">
     <div class="container">
       <SectionHeader eyebrow="Gallery" title="Our balloon work" id="gallery-title" />
-      <EventGallery photos={corporateGallery} initial={6} id="corporate-gallery" />
+      <EventGallery
+        photos={corporateGallery}
+        limit={GALLERY_PREVIEW_COUNT}
+        moreHref="/corporate/gallery/"
+      />
     </div>
   </section>
 

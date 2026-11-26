@@ -71,6 +71,7 @@ export const site = {
   },
 
   nav: [
+    { label: 'Home', href: '/' },
     { label: 'Shop', href: '/shop/' },
     { label: 'Events', href: '/events/' },
     { label: 'Corporate', href: '/corporate/' },

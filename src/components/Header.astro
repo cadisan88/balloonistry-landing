@@ -12,10 +12,8 @@ const current = normalize(Astro.url.pathname);
 const isCurrent = (href: string) =>
   href === '/' ? current === '/' : current.startsWith(normalize(href));
 
-// The nav is a flat list. An old grouped item is flattened, and Home is the logo.
-const links: NavLink[] = site.nav
-  .flatMap((item) => (isNavGroup(item) ? item.children : [item]))
-  .filter((link) => link.href !== '/');
+// The nav is a flat list. An old grouped item is flattened.
+const links: NavLink[] = site.nav.flatMap((item) => (isNavGroup(item) ? item.children : [item]));
 
 const channels: {
   key: string;

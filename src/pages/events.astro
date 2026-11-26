@@ -9,10 +9,12 @@ import Fringe from '../components/Fringe.astro';
 import HowItWorks from '../components/HowItWorks.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { eventGallery } from '../config/events';
+import { GALLERY_PREVIEW_COUNT } from '../config/events';
+import { getEventsGallery } from '../lib/content';
 import { site } from '../config/site';
 
 const QUOTE_ID = 'quote';
+const eventGallery = await getEventsGallery();
 const heroPhoto = eventGallery[0];
 const steps = [
   { title: 'Tell us about your event', text: 'You can tell us your date, location, and inspo.' },
@@ -79,7 +81,11 @@ const steps = [
         id="services-title"
       />
       <EventServices />
-      <EventGallery />
+      <EventGallery
+        photos={eventGallery}
+        limit={GALLERY_PREVIEW_COUNT}
+        moreHref="/events/gallery/"
+      />
     </div>
   </section>
 

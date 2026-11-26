@@ -255,6 +255,12 @@ const jsonLd = [
     margin-block: 0;
   }
 
+  /* The tag stickers on the product page sit perfectly level (the tilt stays on cards).
+     Set through the variable: the build's CSS minifier drops a plain `rotate` override here. */
+  .product__info {
+    --sticker-tilt: 0deg;
+  }
+
   .product__name {
     font-size: var(--text-h2);
   }

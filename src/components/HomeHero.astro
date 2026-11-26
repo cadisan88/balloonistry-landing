@@ -1,7 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
-import Confetti from './Confetti.astro';
 import Icon, { type IconName } from './Icon.astro';
+import Sparkles from './Sparkles.astro';
 import Squiggle from './Squiggle.astro';
 import heroImage from '../assets/brand/hero-talk-30.jpg';
 import { site } from '../config/site';
@@ -11,6 +11,9 @@ const facts: { icon: IconName; label: string }[] = [
   { icon: 'truck', label: 'Pickup & delivery' },
   { icon: 'palette', label: 'Custom colours' },
 ];
+
+// Floating balloons around the arch (decorative)
+const balloons = ['crimson', 'turquoise', 'orange'] as const;
 
 // The tagline with its last word underlined by the hand-drawn squiggle
 const match = /^(.*\s)(\S+?)([.!?]*)$/.exec(site.tagline);
@@ -51,7 +54,6 @@ const [lead, word, end] = match ? [match[1], match[2], match[3]] : [site.tagline
     </div>
 
     <div class="hero__frame">
-      <Confetti variant="frame" />
       <div class="hero__media enter-scale enter-d2">
         <Picture
           src={heroImage}
@@ -63,13 +65,22 @@ const [lead, word, end] = match ? [match[1], match[2], match[3]] : [site.tagline
           fetchpriority="high"
         />
       </div>
+
+      <div class="hero__balloons" aria-hidden="true">
+        {balloons.map((colour, index) => (
+          <span class:list={['hero__balloon', `hero__balloon--${index + 1}`]}>
+            <span class:list={['hero__balloon-body', `hero__balloon-body--${colour}`]} />
+          </span>
+        ))}
+      </div>
+      <Sparkles class="hero__sparkles" />
     </div>
   </div>
 </section>
 
 <style>
   .hero {
-    /* The confetti sits past the frame on phones: never scroll sideways */
+    /* The balloons float past the frame on phones: never scroll sideways */
     overflow-x: clip;
     padding-block: var(--space-7) calc(var(--section-pad) + var(--fringe-tooth));
   }
@@ -181,5 +192,134 @@ const [lead, word, end] = match ? [match[1], match[2], match[3]] : [site.tagline
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .hero__frame :global(.hero__sparkles) {
+    position: absolute;
+    z-index: 2;
+    top: 6%;
+    left: -2.25rem;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  /* ----- Floating balloons: they pop in with a spring, then bob gently ----- */
+
+  .hero__balloons {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .hero__balloon {
+    position: absolute;
+    display: block;
+    animation: balloon-pop 0.9s var(--ease-spring) both;
+  }
+
+  .hero__balloon--1 {
+    top: -1.5rem;
+    right: -0.75rem;
+    width: 4.25rem;
+    animation-delay: 0.3s;
+  }
+
+  .hero__balloon--2 {
+    top: 38%;
+    right: -2.25rem;
+    width: 3rem;
+    animation-delay: 0.45s;
+  }
+
+  .hero__balloon--3 {
+    bottom: 12%;
+    left: -1.75rem;
+    width: 3.5rem;
+    animation-delay: 0.6s;
+  }
+
+  .hero__balloon-body {
+    position: relative;
+    display: block;
+    aspect-ratio: 5 / 6;
+    border-radius: 50% 50% 48% 48% / 56% 56% 44% 44%;
+    box-shadow: inset -0.4rem -0.5rem 0 color-mix(in srgb, var(--color-ink) 12%, transparent);
+    animation: balloon-bob 3.4s var(--ease-spring) infinite alternate;
+  }
+
+  /* Highlight: the shiny spot that makes it look like a real balloon */
+  .hero__balloon-body::before {
+    content: '';
+    position: absolute;
+    top: 16%;
+    left: 22%;
+    width: 22%;
+    height: 16%;
+    border-radius: 50%;
+    background: var(--color-white);
+    opacity: 0.55;
+    transform: rotate(-30deg);
+  }
+
+  /* String */
+  .hero__balloon-body::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 1px;
+    height: 120%;
+    background: var(--color-border-strong);
+  }
+
+  .hero__balloon--2 .hero__balloon-body {
+    animation-delay: -1.2s;
+  }
+
+  .hero__balloon--3 .hero__balloon-body {
+    animation-delay: -2.1s;
+  }
+
+  .hero__balloon-body--crimson {
+    background: var(--color-crimson);
+  }
+
+  .hero__balloon-body--turquoise {
+    background: var(--color-turquoise);
+  }
+
+  .hero__balloon-body--orange {
+    background: var(--color-orange);
+  }
+
+  @keyframes balloon-pop {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem) scale(0.6);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes balloon-bob {
+    from {
+      transform: translateY(0) rotate(-4deg);
+    }
+
+    to {
+      transform: translateY(-0.875rem) rotate(4deg);
+    }
+  }
+
+  /* No pop, bob or float: the balloons just stand there */
+  @media (prefers-reduced-motion: reduce) {
+    .hero__balloon,
+    .hero__balloon-body {
+      animation: none;
+    }
   }
 </style>

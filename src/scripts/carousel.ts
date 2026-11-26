@@ -1,6 +1,6 @@
 /**
  * Carousel behaviour (Client love).
- * Auto-advance every `data-autoplay-ms`, prev/next, dots and a Pause/Play button.
+ * Auto-advance every `data-autoplay-ms`, prev/next, dots and a Pause/Play icon button.
  * Autoplay stops while the mouse is over it, while focus is inside it, while the tab is hidden
  * and always under prefers-reduced-motion (the buttons still work).
  */
@@ -51,11 +51,11 @@ function setup(root: HTMLElement): () => void {
   const syncState = () => {
     live.setAttribute('aria-live', playing() ? 'off' : 'polite');
     toggle.hidden = !autoplayAllowed();
-    toggle.textContent = userPaused ? 'Play' : 'Pause';
-    toggle.setAttribute('aria-pressed', String(userPaused));
+    // The icon follows data-state (CSS); the accessible name says what a press will do
+    toggle.dataset.state = userPaused ? 'paused' : 'playing';
     toggle.setAttribute(
       'aria-label',
-      userPaused ? 'Play reviews automatically' : 'Pause automatic reviews',
+      userPaused ? 'Play automatic reviews' : 'Pause automatic reviews',
     );
     schedule();
   };

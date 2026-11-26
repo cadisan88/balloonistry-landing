@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { faqMatches, faqResultsMessage, normalizeText } from '../src/lib/faq';
+import { faqEmptyMessage, faqMatches, faqResultsMessage, normalizeText } from '../src/lib/faq';
 
 describe('normalizeText', () => {
   it('lowercases, removes accents and tidies spaces', () => {
@@ -36,6 +36,16 @@ describe('faqMatches', () => {
 
   it('does not match a word that is not there', () => {
     expect(faqMatches('refund', question, answer)).toBe(false);
+  });
+});
+
+describe('faqEmptyMessage', () => {
+  it('wraps the query in curly quotes and has no replacement character', () => {
+    const message = faqEmptyMessage('  balloons ');
+    expect(message).toBe('No questions match “balloons”.');
+    expect(message).not.toContain('�');
+    expect(message).toContain('“');
+    expect(message).toContain('”');
   });
 });
 

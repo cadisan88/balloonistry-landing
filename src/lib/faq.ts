@@ -26,6 +26,11 @@ export function faqMatches(query: string, question: string, answer: string): boo
   return words.every((word) => haystack.includes(word));
 }
 
+/** The "no matches" message, with the query in curly quotes (U+201C and U+201D). */
+export function faqEmptyMessage(query: string): string {
+  return `No questions match “${query.trim()}”.`;
+}
+
 /** Text for the live region after a search. */
 export function faqResultsMessage(count: number): string {
   return `${count} ${count === 1 ? 'question' : 'questions'} found`;

@@ -6,7 +6,7 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { getListedProducts, getVisibleCategories } from '../lib/content';
-import { sitemapXml } from '../lib/seo';
+import { STATIC_PAGE_PATHS, sitemapXml } from '../lib/seo';
 
 export const prerender = true;
 
@@ -18,15 +18,9 @@ export const GET: APIRoute = async () => {
   ]);
 
   const paths = [
-    '/',
-    '/shop/',
+    ...STATIC_PAGE_PATHS,
     ...categories.map((category) => `/shop/${category.id}/`),
     ...products.map((product) => `/products/${product.id}/`),
-    '/events/',
-    '/corporate/',
-    '/contact/',
-    '/faq/',
-    '/about/',
     ...policies.map((policy) => `/policies/${policy.id}/`),
   ];
 

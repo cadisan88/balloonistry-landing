@@ -38,31 +38,31 @@ const structured = faqJsonLd(
   <section class="container container--narrow faq">
     <header class="page-head">
       <p class="eyebrow">FAQ</p>
-      <h1>Frequently asked questions</h1>
+      <div class="faq__top">
+        <h1>Frequently asked questions</h1>
+
+        <!-- Needs JavaScript: hidden without it, and then every question shows -->
+        <div class="faq__search" role="search">
+          <label class="faq__search-label" for="faq-search">
+            Search questions
+          </label>
+          <input
+            class="faq__search-input"
+            id="faq-search"
+            type="search"
+            autocomplete="off"
+            data-faq-input
+          />
+          <p class="visually-hidden" role="status" aria-live="polite" data-faq-status></p>
+        </div>
+      </div>
     </header>
 
-    <!-- Needs JavaScript: hidden without it, and then every question shows -->
-    <div class="faq__search" role="search">
-      <label class="faq__search-label" for="faq-search">
-        Search questions
-      </label>
-      <input
-        class="faq__search-input"
-        id="faq-search"
-        type="search"
-        autocomplete="off"
-        data-faq-input
-      />
-      <p class="visually-hidden" role="status" aria-live="polite" data-faq-status></p>
-    </div>
-
     <div class="faq__empty" data-faq-empty hidden>
-      <p>
-        No questions match �<span data-faq-empty-query></span>�.
-        <button class="faq__clear" type="button" data-faq-clear>
-          Clear search
-        </button>
-      </p>
+      <p class="faq__empty-message" data-faq-empty-message></p>
+      <button class="faq__clear" type="button" data-faq-clear>
+        Clear search
+      </button>
     </div>
 
     {groups.map(({ group, title, items }) => (
@@ -98,9 +98,18 @@ const structured = faqJsonLd(
     padding-bottom: var(--section-pad);
   }
 
+  /* Phones: the heading, then the search, stacked. From 860px they share one row. */
+  .faq__top {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .faq__top h1 {
+    margin-bottom: 0;
+  }
+
   .faq__search {
     display: none;
-    margin-bottom: var(--space-6);
   }
 
   :global(.js) .faq__search {
@@ -124,6 +133,18 @@ const structured = faqJsonLd(
     font: inherit;
   }
 
+  @media (min-width: 860px) {
+    .faq__top {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-6);
+      align-items: center;
+    }
+
+    .faq__search-input {
+      width: 18rem;
+    }
+  }
+
   .faq__empty {
     margin-bottom: var(--space-6);
     padding: var(--space-5);
@@ -141,7 +162,11 @@ const structured = faqJsonLd(
     display: none;
   }
 
+  /* The button sits on its own line under the message */
   .faq__clear {
+    display: block;
+    min-height: 44px;
+    margin-top: var(--space-2);
     padding: 0;
     border: 0;
     background: none;
